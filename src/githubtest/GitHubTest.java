@@ -26,7 +26,6 @@ public class GitHubTest extends JPanel {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("CS321 Setup Test");
-        // FIX: Changed from SetupTest to GitHubTest
         frame.add(new GitHubTest()); 
         frame.setSize(300, 300);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
