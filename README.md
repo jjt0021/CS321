@@ -13,6 +13,13 @@ GitHub requires a Personal Access Token (PAT) for NetBeans integration.
 
     Use this token as your password when prompted in NetBeans.
 
+    Got to Team > Git > clone
+
+    in the repository url copy the https address under code in the github
+
+    for the user put your email
+    for the passwork put the token(classic) in. make sure to save it
+
 2. Standard Session Workflow
 
 To avoid merge conflicts, always follow this order:
