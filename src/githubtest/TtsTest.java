@@ -13,6 +13,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public class TtsTest {
 
@@ -30,7 +31,25 @@ public class TtsTest {
             
             String[] chunks = inputText.split("(?<=[.!?])\\s+");
             
-            int length = chunks.length;
+            List<String> combined = new ArrayList<>();
+
+            int chunkPos = 1;
+            String combinedText = chunks[0];
+            
+            while (chunkPos < chunks.length) {
+
+                while (combinedText.length() + chunks[chunkPos].length() < 31) {
+                    combinedText = chunks[chunkPos] + chunks[chunkPos + 1];
+                    chunkPos++;
+                }
+                
+               
+                combined.add(combinedText);
+                
+                chunkPos++;
+                combinedText = chunks[chunkPos];
+                chunkPos++;
+            }
             
 
             return new ArrayList<>(Arrays.asList(chunks));
