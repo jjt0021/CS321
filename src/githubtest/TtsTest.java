@@ -16,9 +16,49 @@ import java.util.concurrent.CompletableFuture;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 
 public class TtsTest {
+    
+    public class AudioUtils {
+        
+        private Clip clip;
+        private long clipPosition;
+
+        
+        public void playAuido(String fileURL) throws UnsupportedAudioFileException, IOException, LineUnavailableException{
+            File audioFile = new File(fileURL);
+            
+            AudioInputStream chunk = AudioSystem.getAudioInputStream(audioFile);
+            clip = AudioSystem.getClip();
+            clip.open(chunk);
+            
+            clip.addLineListener(event -> {
+            if (event.getType() == LineEvent.Type.STOP) {
+              System.out.println("audio is finished");
+              clip.close();
+            }
+            });
+      
+        }
+        
+        public void playAudio(){
+            clip.setMicrosecondPosition(clipPosition);
+            clip.start();
+        }
+        public void pauseAudio(){
+            clipPosition = clip.getMicrosecondPosition();
+            clip.stop();
+            
+        }
+        
+    }
 
     public static String getTextFromPdf(File pdfFile) throws IOException {
         try (PDDocument document = PDDocument.load(pdfFile)) {
