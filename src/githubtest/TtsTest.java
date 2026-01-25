@@ -34,19 +34,35 @@ public class TtsTest {
             List<String> combined = new ArrayList<>();
 
             int chunkPos = 1;
+            int chunkLength = 31;
+            int maxChunkLength = 60;
             String combinedText = chunks[0];
+            
             
             while (chunkPos < chunks.length) {
 
-                while (combinedText.length() + chunks[chunkPos].length() < 31) {
-                    combinedText = chunks[chunkPos] + chunks[chunkPos + 1];
+                while (combinedText.length() + chunks[chunkPos].length() < chunkLength) {
+                    combinedText += chunks[chunkPos];
                     chunkPos++;
+                }
+                
+                // This part is to split the text if it is too long. 
+                if (combinedText.length() > maxChunkLength){
+                    int stringPos = combinedText.length()/2;
+                    while (stringPos < combinedText.length() && combinedText.charAt(stringPos) != ' ') {// WHY TF IS A STING NOT TREATED AS AN ARRY OF CHARS?
+                        stringPos++;
+                    }
+                
+                    String firstPart = combinedText.substring(0, stringPos);  
+                    combinedText = combinedText.substring(stringPos); // Could probobly find a better way to do this but fuck it.   
+
+                    combined.add(firstPart);
+                    
                 }
                 
                
                 combined.add(combinedText);
                 
-                chunkPos++;
                 combinedText = chunks[chunkPos];
                 chunkPos++;
             }
