@@ -4,6 +4,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,9 +12,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.concurrent.CompletableFuture;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+
 
 public class TtsTest {
 
@@ -49,12 +52,12 @@ public class TtsTest {
                 // This part is to split the text if it is too long. 
                 if (combinedText.length() > maxChunkLength){
                     int stringPos = combinedText.length()/2;
-                    while (stringPos < combinedText.length() && combinedText.charAt(stringPos) != ' ') {// WHY TF IS A STING NOT TREATED AS AN ARRY OF CHARS?
+                    while (stringPos < combinedText.length() && combinedText.charAt(stringPos) != ' ') {
                         stringPos++;
                     }
                 
                     String firstPart = combinedText.substring(0, stringPos);  
-                    combinedText = combinedText.substring(stringPos); // Could probobly find a better way to do this but fuck it.   
+                    combinedText = combinedText.substring(stringPos);  
 
                     combined.add(firstPart);
                     
@@ -71,6 +74,7 @@ public class TtsTest {
             return new ArrayList<>(Arrays.asList(chunks));
         }
     }
+    
     public static void main(String[] args) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
 
@@ -92,20 +96,27 @@ public class TtsTest {
             }
             """, model, input, voice);
 
+        HttpClient client = HttpClient.newHttpClient();
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
-        HttpResponse<byte[]> response = client.send(
-                request,
-                HttpResponse.BodyHandlers.ofByteArray()
-        );
+        // Send async
+        CompletableFuture<HttpResponse<byte[]>> responseFuture =
+                client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
 
-        Path outputPath = Path.of("speech.mp3");
-        Files.write(outputPath, response.body());
-
-        System.out.println("Saved speech to " + outputPath.toAbsolutePath());
+        // Handle response when it arrives
+        responseFuture.thenAccept(response -> {
+            try {
+                Path outputPath = Path.of("speech.mp3");
+                Files.write(outputPath, response.body());
+                System.out.println("Saved speech to " + outputPath.toAbsolutePath());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
