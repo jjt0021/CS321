@@ -24,15 +24,37 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 
-public class TtsTest {
     
-    public class AudioUtils {
+    public class chunk {
         
         private Clip clip;
         private long clipPosition;
+        private int chunk;
+        private String fileURL;
+        
+        public void chunk(int chunk, String fileURL){
+            this.chunk = chunk;
+            this.fileURL = fileURL;
+        }
+        
+        public void setFileURL(String path){
+            fileURL = path;
+        }
+        
+        public String getFileURL(){
+            return fileURL;
+        }
+        
+        public void setChunk(int chukNum){
+            chunk = chukNum;
+        }
+        
+        public int getChunk(){
+            return chunk;
+        }
 
         
-        public void playAuido(String fileURL) throws UnsupportedAudioFileException, IOException, LineUnavailableException{
+        public void playAuido() throws UnsupportedAudioFileException, IOException, LineUnavailableException{
             File audioFile = new File(fileURL);
             
             AudioInputStream chunk = AudioSystem.getAudioInputStream(audioFile);
@@ -58,7 +80,7 @@ public class TtsTest {
             
         }
         
-    }
+  }
 
     public static String getTextFromPdf(File pdfFile) throws IOException {
         try (PDDocument document = PDDocument.load(pdfFile)) {
@@ -149,13 +171,12 @@ public class TtsTest {
                 client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
 
         // Handle response when it arrives
-        responseFuture.thenAccept(response -> {
+        responseFuture.thenAccept((HttpResponse<byte[]> response) -> {
             try {
                 Path outputPath = Path.of("speech.mp3");
                 Files.write(outputPath, response.body());
                 System.out.println("Saved speech to " + outputPath.toAbsolutePath());
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (IOException e) {
             }
         });
     }
