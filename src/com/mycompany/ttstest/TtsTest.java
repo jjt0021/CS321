@@ -25,20 +25,20 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 
     
-    public class chunk {
+    public class Chunk {
         
         private Clip clip;
         private long clipPosition;
         private int chunk;
         private String fileURL;
         
-        public void chunk(int chunk, String fileURL){
+        public Chunk(int chunk, String fileURL){
             this.chunk = chunk;
             this.fileURL = fileURL;
         }
         
         public void setFileURL(String path){
-            fileURL = path;
+            this.fileURL = path;
         }
         
         public String getFileURL(){
@@ -46,7 +46,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
         }
         
         public void setChunk(int chukNum){
-            chunk = chukNum;
+            this.chunk = chukNum;
         }
         
         public int getChunk(){
@@ -70,7 +70,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
       
         }
         
-        public void playAudio(){
+        public void resumeAudio(){
             clip.setMicrosecondPosition(clipPosition);
             clip.start();
         }
