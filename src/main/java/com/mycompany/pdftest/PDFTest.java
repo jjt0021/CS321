@@ -33,7 +33,93 @@ public class PDFTest {
         }
     }//Tell-Tale_Heart.pdf
 
+    public static class gui {
+    
+        public static JScrollPane makeScrollPane(ArrayList<String> window){
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            int width = (int) screenSize.getWidth();
+            int height = (int) screenSize.getHeight();
+            JPanel panel = new JPanel();
+            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+            panel.setBackground(Color.DARK_GRAY);
 
+            System.setOut(new java.io.PrintStream(System.out, true, StandardCharsets.UTF_8));
+
+            for(int i = 0; i <= window.size() - 1; i++) {
+                // Used HTML here becuase it helps with auto text wrapping
+                JButton button = new JButton("<html><div align='left'>" + window.get(i) + "</div></html>");            
+                button.putClientProperty("chunkNum", i);
+                button.setFocusPainted(false);// highlights what you click on
+                button.setContentAreaFilled(false); // IMPORTANT- Can change the button color, important of highlighting
+                button.setHorizontalAlignment(SwingConstants.LEFT);
+
+                //button.setBorderPainted(false); highlights what you hover over
+                //button.setOpaque(false); as far as I can tell does nothing.
+
+                // would like to make them dynamicly resizeable, but very hard.
+                button.setMaximumSize(new Dimension((int) Math.round(width * 0.9), 1000));
+                button.setForeground(Color.WHITE);
+                button.addActionListener(e->{
+                    JButton source = (JButton) e.getSource();
+                    int chunkNum = (int) source.getClientProperty("chunkNum");
+                    System.out.println(chunkNum);
+                });
+                panel.add(button);
+
+            }
+
+            JScrollPane scrollPane = new JScrollPane(panel);
+            return scrollPane;
+
+        }
+    
+    }
+    
+    
+    public static class PlayState {
+        private int currentChunk;
+        private boolean isPlaying;
+        
+        private int endChunk;
+        private int startChunk;
+        
+        private int loadedRange = 100;
+        private int reloadRange = 30;
+        
+        private ArrayList<String> fullBook;
+        private ArrayList<String> loadWindowText = new ArrayList<>();
+        
+        public PlayState(int currentChunk, ArrayList<String> fullBook){
+            this.currentChunk = currentChunk;
+            this.fullBook = fullBook;
+            
+        }
+
+        public void reloadCheck(){
+            if (currentChunk + reloadRange > endChunk || currentChunk - reloadRange < startChunk){
+                reloadChunks(fullBook);
+            }
+        }
+        
+        public void reloadChunks(List<String> fullBook) {
+            
+            // Math.min is the easiest way to keep it inbounds
+            startChunk = Math.min(0, currentChunk - loadedRange);
+            endChunk = Math.min(fullBook.size() - 1, currentChunk + loadedRange);
+            
+            for(int i = startChunk; i > endChunk; i++){
+                loadWindowText.add(fullBook.get(i));
+            }  
+        }
+        
+        public void setPlayState(boolean playState){
+            this.isPlaying = playState;
+        }
+        public boolean getPlayState(){
+            return isPlaying;
+        }
+    }
+    
     public class TextUtils {
 
 
@@ -42,7 +128,7 @@ public class PDFTest {
             String[] chunks = inputText.split("(?<=[.!?])\\s+");
             
             List<String> combined = new ArrayList<>();
-
+            
             int chunkPos = 1;
             int chunkLength = 31;
             int maxChunkLength = 60;
@@ -92,43 +178,18 @@ public class PDFTest {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(width, height);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(Color.DARK_GRAY);
-
-        System.setOut(new java.io.PrintStream(System.out, true, StandardCharsets.UTF_8));
+        
+        //TEST
         String pdfPath = "src/main/java/com/mycompany/pdftest/Tell-Tale_Heart.pdf";
         File pdf = new File(pdfPath);
-
         ArrayList<String> book = new ArrayList<>();
         book = TextUtils.splitText(getTextFromPdf(pdf));
         
-        for (int i = 0; i <= book.size() - 1; i++) {
-            // Used HTML here becuase it helps with auto text wrapping
-            JButton button = new JButton("<html><div align='left'>" + book.get(i) + "</div></html>");            
-            button.putClientProperty("chunkNum", i);
-            button.setFocusPainted(false);// highlights what you click on
-            button.setContentAreaFilled(false); // IMPORTANT- Can change the button color, important of highlighting
-            button.setHorizontalAlignment(SwingConstants.LEFT);
-
-            //button.setBorderPainted(false); highlights what you hover over
-            //button.setOpaque(false); as far as I can tell does nothing.
-            
-            // would like to make them dynamicly resizeable, but very hard.
-            button.setMaximumSize(new Dimension((int) Math.round(width * 0.9), 1000));
-            button.setForeground(Color.WHITE);
-            button.addActionListener(e->{
-                JButton source = (JButton) e.getSource();
-                int chunkNum = (int) source.getClientProperty("chunkNum");
-                System.out.println(chunkNum);
-            });
-            panel.add(button);
-       
-        }
-
-        JScrollPane scrollPane = new JScrollPane(panel);
-
+        JScrollPane scrollPane = new JScrollPane(gui.makeScrollPane(book));
         
+        
+        
+        //END TEST
         // This section is for all of the action buttons like play pause etc.
         JButton play = new JButton("PLAY");
         play.setFocusPainted(true);// highlights what you click on
@@ -144,8 +205,6 @@ public class PDFTest {
         play.setFocusPainted(true);// highlights what you click on
         play.setContentAreaFilled(true); // IMPORTANT- Can change the button color, important of highlighting
         play.setBackground(Color.red);
-        
-        
         
         
         JLayeredPane layerWindow = new JLayeredPane();
@@ -178,15 +237,28 @@ public class PDFTest {
    
         frame.setVisible(true);
 
-        /**
-         
+        // TempVar for testing
+        PlayState test = new PlayState(0, book);
+        
+        // The Main LOOP
+        boolean playing = true;
+        while(playing){
+            
+        
+        }
+        
+    /*
+       ************ IMPORTANT - AUTO SCROLL CODE ******************* 
 
-        System.out.print(book);
-        system.out.print("test")
-         
-         
-         
-         */
+        // Auto Scroll Test
+        JViewport viewport = scrollPane.getViewport();
+        Point p = viewport.getViewPosition();
+
+        p.y += 100;   // move down 50 pixels
+        viewport.setViewPosition(p);
+        
+        
+        **/
     }
 
 
