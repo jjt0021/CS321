@@ -13,6 +13,7 @@ import java.util.List;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.Loader;
+import java.nio.charset.StandardCharsets;
 
 /**
  *
@@ -60,12 +61,12 @@ public class PDFTest {
                     String firstPart = combinedText.substring(0, stringPos);  
                     combinedText = combinedText.substring(stringPos);  
 
-                    combined.add(firstPart);
+                    combined.add(firstPart.strip());
                     
                 }
                 
                
-                combined.add(combinedText);
+                combined.add(combinedText.strip());
                 
                 combinedText = chunks[chunkPos];
                 chunkPos++;
@@ -78,10 +79,13 @@ public class PDFTest {
     
 
     public static void main(String[] args) throws IOException {
+        System.setOut(new java.io.PrintStream(System.out, true, StandardCharsets.UTF_8));
         String pdfPath = "src/main/java/com/mycompany/pdftest/Tell-Tale_Heart.pdf";
         File pdf = new File(pdfPath);
 
-        System.out.println(getTextFromPdf(pdf));
+        ArrayList<String> book = new ArrayList<>();
+        book = TextUtils.splitText(getTextFromPdf(pdf));
+        System.out.print(book);
 
     }
 }
