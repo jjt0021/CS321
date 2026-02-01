@@ -88,7 +88,6 @@ public class AudioBookDB {
         }
     }
 
-    // We Will really only update one var at a time, I am lazy so I dont want to make different fuctions, We can just set the other vlaues to null
     public void upDateCurrentChunk (String filePath, int currentChunk){
         for (AudioBook book : audioBooks) {
             if (book.filePath == filePath){
@@ -103,7 +102,6 @@ public class AudioBookDB {
     }
     
     
-    // We Will really only update one var at a time, I am lazy so I dont want to make different fuctions, We can just set the other vlaues to null
     public void updateBookMarks (String filePath, int bookMarkID, String bookMarkText){
         for (AudioBook book : audioBooks) {
             if (book.filePath == filePath){
@@ -117,7 +115,7 @@ public class AudioBookDB {
         // This is really only need for the current chunk update, but just to be safe
         addAudioBook(filePath);
         save();
-
+ 
     }
     
     public void addAudioBook(String filePath) {

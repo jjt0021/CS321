@@ -9,6 +9,13 @@ import com.google.gson.GsonBuilder;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import javax.swing.JComboBox;
+import javax.swing.JPopupMenu;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import static javax.swing.JLayeredPane.PALETTE_LAYER;
 
 /**
  *
@@ -40,7 +47,52 @@ public class Settings {
     
     
     
-    public void settingGUI(){}
+    public static JLayeredPane settingGUI(){
+    
+                    String[] options = { "Red", "Green", "Blue" };
+        JComboBox<String> comboBox = new JComboBox<>(options);
+
+                    String[] dialogOptions = {
+                    "Message Dialog",
+                    "Confirm Dialog",
+                    "Input Dialog",
+                    "Warning Dialog"
+            };
+
+        comboBox.setMaximumSize(new Dimension(250, 25));
+        comboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            // This section is for all of the action buttons like play pause etc.
+            JButton play = new JButton("PLAY");
+            play.setFocusPainted(true);// highlights what you click on
+            play.setContentAreaFilled(true); // IMPORTANT- Can change the button color, important of highlighting
+            play.setBackground(Color.red);
+
+            JButton prevChunk = new JButton("PLAY");
+            play.setFocusPainted(true);// highlights what you click on
+            play.setContentAreaFilled(true); // IMPORTANT- Can change the button color, important of highlighting
+            play.setBackground(Color.red);
+
+            JButton skipChunk = new JButton("PLAY");
+            play.setFocusPainted(true);// highlights what you click on
+            play.setContentAreaFilled(true); // IMPORTANT- Can change the button color, important of highlighting
+            play.setBackground(Color.red);
+
+            JLayeredPane layerWindow = new JLayeredPane();
+            layerWindow.setOpaque(true);
+
+           // layerWindow.add(comboBox, JLayeredPane.DEFAULT_LAYER);
+            layerWindow.add(play, PALETTE_LAYER);
+            layerWindow.add(skipChunk, PALETTE_LAYER);
+            layerWindow.add(prevChunk, PALETTE_LAYER);
+            layerWindow.setBackground(Color.DARK_GRAY);
+
+
+          
+            
+            return layerWindow;
+    }
+
     
 }
 
@@ -60,4 +112,4 @@ public class Settings {
  * Settings settings = new Settings(); // you need to create a settings object before modifications
  * settings.save("settings.json");
 
-**/
+**/-l\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\

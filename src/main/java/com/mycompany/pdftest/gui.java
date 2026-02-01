@@ -114,6 +114,8 @@ import javax.swing.SwingConstants;
             layerWindow.add(prevChunk, PALETTE_LAYER);
 
             // Resizes components
+            // We could remove this becuase the fetuare is kind of useless and jsut add extra complexety.
+            // Also without it we would not need to pass frame to the 
             // chatgpt - with eddits
             frame.addComponentListener(new ComponentAdapter() {
                 @Override

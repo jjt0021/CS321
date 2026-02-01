@@ -51,8 +51,23 @@ public class PDFTest {
         //0 Is just for testing later it will be changed to get from the saved data.
         playState test = new playState(0, book);
         
-        JLayeredPane panel = gui.makePane(frame, test);
-        frame.setContentPane(panel);
+        JLayeredPane fileExplorer = new JLayeredPane();
+        JLayeredPane audioBook = gui.makePane(frame, test);
+        JLayeredPane settings = Settings.settingGUI();
+        
+        CardLayout cardLayout = new CardLayout();
+        JPanel screens = new JPanel(cardLayout);
+        
+        
+        // The Fist add is shown first, so we should add the FIle explorer first.
+        //screens.add(fileExplorer, "File Explorer");
+        screens.add(settings, "settings");
+        screens.add(audioBook, "audioBook");
+        // We will need to add listeners to every menue
+        // The code will look something like this         
+        // startButton.addActionListener(e -> cardLayout.show(cards, "game"));
+        
+        frame.setContentPane(screens);
         
         
         frame.setVisible(true);
