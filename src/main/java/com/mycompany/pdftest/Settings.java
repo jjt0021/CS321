@@ -112,4 +112,4 @@ public class Settings {
  * Settings settings = new Settings(); // you need to create a settings object before modifications
  * settings.save("settings.json");
 
-**/-l\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+**/
