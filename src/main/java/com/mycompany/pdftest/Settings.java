@@ -10,11 +10,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import javax.swing.JComboBox;
-import javax.swing.JPopupMenu;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.util.ArrayList;
 import static javax.swing.JLayeredPane.PALETTE_LAYER;
 
 /**
@@ -22,6 +20,23 @@ import static javax.swing.JLayeredPane.PALETTE_LAYER;
  * @author elimo
  */
 public class Settings {
+    
+    public class TTSmodel{
+    public String URL = "https://api.openai.com/v1/audio/speech";
+    public java.util.List<String> bookMakredText = new ArrayList<>();
+    public String name = "";
+    public String apiKey = "";
+    }
+    
+    public class SettingsValues {
+        public boolean showProgressBar = true;
+        public String voice = "Alloy";
+        public int reloadRange = 30;
+        public int loadedRange = 100;
+        private java.util.List<TTSmodel> TTSmodelList;
+
+    
+    }
     
     public boolean showProgressBar = true;
     public String voice = "Alloy";

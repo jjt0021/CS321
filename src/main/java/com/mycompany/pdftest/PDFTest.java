@@ -61,7 +61,7 @@ public class PDFTest {
         
         // The Fist add is shown first, so we should add the FIle explorer first.
         //screens.add(fileExplorer, "File Explorer");
-        screens.add(settings, "settings");
+        //screens.add(settings, "settings");
         screens.add(audioBook, "audioBook");
         // We will need to add listeners to every menue
         // The code will look something like this         
