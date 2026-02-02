@@ -53,7 +53,6 @@ public class PDFTest {
         
         JLayeredPane fileExplorer = new JLayeredPane();
         JLayeredPane audioBook = gui.makePane(frame, test);
-        JLayeredPane settings = Settings.settingGUI();
         
         CardLayout cardLayout = new CardLayout();
         JPanel screens = new JPanel(cardLayout);

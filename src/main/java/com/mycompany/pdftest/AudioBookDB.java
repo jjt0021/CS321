@@ -90,7 +90,7 @@ public class AudioBookDB {
 
     public void upDateCurrentChunk (String filePath, int currentChunk){
         for (AudioBook book : audioBooks) {
-            if (book.filePath == filePath){
+            if (book.filePath.equals(filePath)){
                 book.currentChunk = currentChunk;
                 save();
                 return;

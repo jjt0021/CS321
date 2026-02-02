@@ -5,126 +5,90 @@
 package com.mycompany.pdftest;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import javax.swing.JComboBox;
-import javax.swing.*;
-import java.awt.*;
+import java.io.File;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.ArrayList;
-import static javax.swing.JLayeredPane.PALETTE_LAYER;
 
 /**
  *
  * @author elimo
  */
 public class Settings {
+
     
+    
+    private final File settingsFile = new File("AudioBookDB.json");// This should not change, but stll makes it easier to change if we decide to have a different dir for steaming and file exporation.
+    private final Gson gson = new Gson();
+   // private Type type = new TypeToken<java.util.List<AudioBookDB.AudioBook>>() {}.getType();
+    private SettingsValues settings;
+
+    public Settings () {
+        load();
+    }
+
     public class TTSmodel{
-    public String URL = "https://api.openai.com/v1/audio/speech";
-    public java.util.List<String> bookMakredText = new ArrayList<>();
-    public String name = "";
-    public String apiKey = "";
+        public String URL = "https://api.openai.com/v1/audio/speech";
+        public java.util.List<String> voices = new ArrayList<>();
+        public String name = "";
+        public String apiKey = "";
     }
     
     public class SettingsValues {
+
         public boolean showProgressBar = true;
         public String voice = "Alloy";
         public int reloadRange = 30;
         public int loadedRange = 100;
-        private java.util.List<TTSmodel> TTSmodelList;
-
-    
+        public java.util.List<TTSmodel> TTSmodelList = new ArrayList<>();
     }
     
-    public boolean showProgressBar = true;
-    public String voice = "Alloy";
-    public int reloadRange = 30;
-    public int loadedRange = 100;
+    public TTSmodel loadModel(String modelName){
+        // Finds if the model is in the list and if not it makes a new one
+        for (TTSmodel ttsModel : settings.TTSmodelList){
+            if(modelName.equals(ttsModel.name)){
+                return ttsModel;
+            }
+        }
+        return new TTSmodel();
+    }
     
-    private static final Gson settings = new GsonBuilder()
-            .setPrettyPrinting()
-            .create();
-
-    public void save(String filePath) throws IOException {
-        try (FileWriter SettingsWriter = new FileWriter(filePath)) {
-            settings.toJson(this, SettingsWriter);
+    
+    
+    // This needs save gaurds, so the user can not input bad values.
+    public void save() {
+        try (Writer writer = new FileWriter(settingsFile)) {
+            gson.toJson(settings, writer);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save audiobooks", e);
         }
     }
 
-    public static Settings load(String filePath) throws IOException {
-        try (FileReader settingsReader = new FileReader(filePath)) {
-            return settings.fromJson(settingsReader, Settings.class);
+    
+    // Need to change to real settings file getter. Right now it is still like AudioBookDB
+    private void load() {
+        
+        // In case there is no file
+        if (settingsFile.exists() && settingsFile.length() > 0) {
+            try (Reader reader = new FileReader(settingsFile)) {
+                
+                
+                settings = gson.fromJson(reader, SettingsValues.class);
+                
+                // In case the file is empty - Can happen if all audioBOoks are deleted
+                if (settings == null) {
+                    settings = new SettingsValues();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to load Settings", e);
+            }
+        } else {
+            settings = new SettingsValues();
         }
-    } 
-    
-    
-    
-    
-    public static JLayeredPane settingGUI(){
-    
-                    String[] options = { "Red", "Green", "Blue" };
-        JComboBox<String> comboBox = new JComboBox<>(options);
-
-                    String[] dialogOptions = {
-                    "Message Dialog",
-                    "Confirm Dialog",
-                    "Input Dialog",
-                    "Warning Dialog"
-            };
-
-        comboBox.setMaximumSize(new Dimension(250, 25));
-        comboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-            // This section is for all of the action buttons like play pause etc.
-            JButton play = new JButton("PLAY");
-            play.setFocusPainted(true);// highlights what you click on
-            play.setContentAreaFilled(true); // IMPORTANT- Can change the button color, important of highlighting
-            play.setBackground(Color.red);
-
-            JButton prevChunk = new JButton("PLAY");
-            play.setFocusPainted(true);// highlights what you click on
-            play.setContentAreaFilled(true); // IMPORTANT- Can change the button color, important of highlighting
-            play.setBackground(Color.red);
-
-            JButton skipChunk = new JButton("PLAY");
-            play.setFocusPainted(true);// highlights what you click on
-            play.setContentAreaFilled(true); // IMPORTANT- Can change the button color, important of highlighting
-            play.setBackground(Color.red);
-
-            JLayeredPane layerWindow = new JLayeredPane();
-            layerWindow.setOpaque(true);
-
-           // layerWindow.add(comboBox, JLayeredPane.DEFAULT_LAYER);
-            layerWindow.add(play, PALETTE_LAYER);
-            layerWindow.add(skipChunk, PALETTE_LAYER);
-            layerWindow.add(prevChunk, PALETTE_LAYER);
-            layerWindow.setBackground(Color.DARK_GRAY);
-
-
-          
-            
-            return layerWindow;
     }
-
     
 }
 
-/**************** THIS IS THE CODE TO LOAD THE SETTINGS *********************
-
-
-        Settings settings;
-        try {
-            settings = Settings.load("settings.json");
-        } catch (IOException e) {
-            settings = new Settings(); // defaults
-            settings.save("settings.json");
-        }
-
-
- ******************** To save settings *****************************
- * Settings settings = new Settings(); // you need to create a settings object before modifications
- * settings.save("settings.json");
-
-**/
