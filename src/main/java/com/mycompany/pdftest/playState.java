@@ -95,7 +95,10 @@ import javax.swing.SwingUtilities;
 
             for(int i = startChunk; i <= endChunk; i++){
                 loadWindowText.add(fullBook.get(i));
-                loadWindowAudio.add(new Audio(fullBook.get(i)));
+            
+                //TODO:
+            // I need to add the extra info we will get from the settings json file.
+            //loadWindowAudio.add(new Audio(fullBook.get(i)));
 
                 //System.out.println("These are the Chunks loaded " + fullBook.get(i));
             }
