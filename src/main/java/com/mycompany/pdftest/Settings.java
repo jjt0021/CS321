@@ -28,6 +28,14 @@ public class Settings {
         load();
     }
 
+    public SettingsValues getSettingsValues() {
+        return settings;
+    }
+
+    public void setSettingsValues(SettingsValues settings) {
+        this.settings = settings;
+    }
+
     public class TTSmodel {
 
         public String URL = "https://api.openai.com/v1/audio/speech";
@@ -39,7 +47,8 @@ public class Settings {
     public class SettingsValues {
 
         public boolean showProgressBar = true;
-        public String voice = "Alloy";
+        public String voice = "";
+        public String TtsModel = "New";
         public int reloadRange = 30;
         public int loadedRange = 100;
         public java.util.List<TTSmodel> TTSmodelList = new ArrayList<>();
