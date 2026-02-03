@@ -1,20 +1,20 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  */
-
-/*******************IMPORTANT*******************
-
-iT IS BEST TO HAVE AUDIO BASED ON CURRENT CHUNK RATHER THAN THE BUTTON.
-IT SHOULD BE IN PLAYSTATE
-
-**/
-
+/** *****************IMPORTANT*******************
+ *
+ * iT IS BEST TO HAVE AUDIO BASED ON CURRENT CHUNK RATHER THAN THE BUTTON.
+ * IT SHOULD BE IN PLAYSTATE
+ *
+ * */
 package com.mycompany.pdftest;
 
 import com.mycompany.pdftest.Audio;
 import com.mycompany.pdftest.gui;
+import com.mycompany.pdftest.SettingsGui;
 import com.mycompany.pdftest.playState;
 import com.mycompany.pdftest.TextUtils;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -28,9 +28,7 @@ import java.awt.*;
  * @author elimo
  */
 public class PDFTest {
-    
-    
-    
+
     public static void main(String[] args) throws IOException, InterruptedException {
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -45,36 +43,31 @@ public class PDFTest {
         File pdf = new File(pdfPath);
         ArrayList<String> book = new ArrayList<>();
         book = TextUtils.splitText(TextUtils.getTextFromPdf(pdf));
-        
 
         // TempVar for testing
         //0 Is just for testing later it will be changed to get from the saved data.
         playState test = new playState(0, book);
-        
+
         JLayeredPane fileExplorer = new JLayeredPane();
         JLayeredPane audioBook = gui.makePane(frame, test);
-        
+        JScrollPane settings = SettingsGui.createSettingsGUI();
         CardLayout cardLayout = new CardLayout();
         JPanel screens = new JPanel(cardLayout);
-        
-        
+
         // The Fist add is shown first, so we should add the FIle explorer first.
         //screens.add(fileExplorer, "File Explorer");
         //screens.add(settings, "settings");
+        screens.add(settings, "Settings");
         screens.add(audioBook, "audioBook");
         // We will need to add listeners to every menue
         // The code will look something like this         
         // startButton.addActionListener(e -> cardLayout.show(cards, "game"));
-        
+
         frame.setContentPane(screens);
-        
-        
+
         frame.setVisible(true);
 
-        
-
-        
-    /*
+        /*
        ************ IMPORTANT - AUTO SCROLL CODE ******************* 
 
         // Auto Scroll Test
@@ -87,6 +80,5 @@ public class PDFTest {
         
         **/
     }
-
 
 }

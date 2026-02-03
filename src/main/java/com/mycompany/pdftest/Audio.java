@@ -24,35 +24,32 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  *
  * @author elimo
  */
-    public class Audio {
-        
-        private String text;
-        private String voice;
-        private String url;
-        private String model;
-        
-        private boolean isGenerating;
-        
-        private Clip clip;
-        private long clipPosition;
-        private String fileURL;
-        
-        
-        
-        public Audio(String text, String voice, String url, String model){
-            this.text = text;
-            this.url = url;
-            this.voice = voice;
-            this.model = model;
-            this.isGenerating = true;
-        }
-        
-        public boolean getIsGenerating(){
-            return isGenerating;
-        }
-        
-        
-        public void requestAudio(){
+public class Audio {
+
+    private String text;
+    private String voice;
+    private String url;
+    private String model;
+
+    private boolean isGenerating;
+
+    private Clip clip;
+    private long clipPosition;
+    private String fileURL;
+
+    public Audio(String text, String voice, String url, String model) {
+        this.text = text;
+        this.url = url;
+        this.voice = voice;
+        this.model = model;
+        this.isGenerating = true;
+    }
+
+    public boolean getIsGenerating() {
+        return isGenerating;
+    }
+
+    public void requestAudio() {
         // This will be where we request audio.
         HttpClient client = HttpClient.newHttpClient();
 
@@ -77,8 +74,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
-        CompletableFuture<HttpResponse<byte[]>> responseFuture =
-                client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
+        CompletableFuture<HttpResponse<byte[]>> responseFuture
+                = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
 
         responseFuture.thenAccept(response -> {
             try {
@@ -93,48 +90,43 @@ import javax.sound.sampled.UnsupportedAudioFileException;
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }).join(); 
-        
-        
-        
-        
-        
-        }
+        }).join();
 
-        public void setFileURL(String path){
-            this.fileURL = path;
-        }
-        
-        public String getFileURL(){
-            return fileURL;
-        }
-        
-        
-        public void playAuido() throws UnsupportedAudioFileException, IOException, LineUnavailableException{
-            File audioFile = new File(fileURL);
-            
-            AudioInputStream chunk = AudioSystem.getAudioInputStream(audioFile);
-            clip = AudioSystem.getClip();
-            clip.open(chunk);
-            
-            clip.addLineListener(event -> {
+    }
+
+    public void setFileURL(String path) {
+        this.fileURL = path;
+    }
+
+    public String getFileURL() {
+        return fileURL;
+    }
+
+    public void playAuido() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+        File audioFile = new File(fileURL);
+
+        AudioInputStream chunk = AudioSystem.getAudioInputStream(audioFile);
+        clip = AudioSystem.getClip();
+        clip.open(chunk);
+
+        clip.addLineListener(event -> {
             if (event.getType() == LineEvent.Type.STOP) {
-              System.out.println("audio is finished");
-              clip.close();
+                System.out.println("audio is finished");
+                clip.close();
             }
-            });
-      
-        }
-        
-        public void resumeAudio(){
-            clip.setMicrosecondPosition(clipPosition);
-            clip.start();
-        }
-        public void pauseAudio(){
-            clipPosition = clip.getMicrosecondPosition();
-            clip.stop();
-            
-        }
-        
-  }
-    
+        });
+
+    }
+
+    public void resumeAudio() {
+        clip.setMicrosecondPosition(clipPosition);
+        clip.start();
+    }
+
+    public void pauseAudio() {
+        clipPosition = clip.getMicrosecondPosition();
+        clip.stop();
+
+    }
+
+}
