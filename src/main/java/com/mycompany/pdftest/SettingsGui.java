@@ -24,9 +24,8 @@ import javax.swing.SpinnerNumberModel;
  */
 public class SettingsGui {
 
-
     static JScrollPane createSettingsGUI(Settings settings) {
-        
+
         SettingsValues initialSettings = settings.getSettingsValues();
         JPanel settingsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -76,8 +75,7 @@ public class SettingsGui {
         gbc.gridy = row;
         gbc.weightx = 0;
 
-        settingsPanel.add(
-                new JLabel("Set Chunk Reloaded Range"), gbc);
+        settingsPanel.add(new JLabel("Set Chunk Reloaded Range"), gbc);
 
         int minReloadedRange = 25;
         int maxReloadedRange = 500;
@@ -142,7 +140,9 @@ public class SettingsGui {
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         JComboBox<String> modelSelector = new JComboBox<>(
-                new String[]{"GPT", "Kokoro", "VoxCPM", "New"}
+                //new String[]{"GPT", "Kokoro", "VoxCPM", "New"}
+                // This converts the list to a string of the model names because JCOmboBox does not take strings
+                settings.modelNameList().toArray(new String[0])
         );
 
         modelSelector.addActionListener(e
@@ -196,8 +196,7 @@ public class SettingsGui {
         gbc.gridy = row;
         gbc.weightx = 0;
 
-        settingsPanel.add(
-                new JLabel("Model Name:"), gbc);
+        settingsPanel.add(new JLabel("Model Name:"), gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -239,13 +238,13 @@ public class SettingsGui {
             // Here you can save the data as needed (e.g., save to a file, database, etc.)
             System.out.println("Progress Bar Enabled: " + progressBarEnabled);
             initialSettings.showProgressBar = progressBarEnabled;
-            
+
             System.out.println("Chunk Loaded Range: " + chunkLoadedRange);
             initialSettings.loadedRange = chunkLoadedRange;
-            
+
             System.out.println("Chunk Reloaded Range: " + chunkReloadedRange);
             initialSettings.reloadRange = chunkReloadedRange;
-            
+
             // All of these requer more work because of the model list.
             System.out.println("TTS Name: " + ttsName);
             System.out.println("TTS Model: " + ttsModel);

@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -26,6 +27,15 @@ public class Settings {
 
     public Settings() {
         load();
+        if (settings.TTSmodelList.size() == 0) {
+            //TTSmodel temp = 
+            settings.TTSmodelList.add(new TTSmodel());
+            System.out.println("New TTSModel added");
+            System.out.print(settings.TTSmodelList);
+        }
+        System.out.println("Model found");
+        System.out.println(settings.TTSmodelList);
+
     }
 
     public SettingsValues getSettingsValues() {
@@ -40,7 +50,7 @@ public class Settings {
 
         public String URL = "https://api.openai.com/v1/audio/speech";
         public java.util.List<String> voices = new ArrayList<>();
-        public String name = "";
+        public String name = "New";
         public String apiKey = "";
     }
 
@@ -51,7 +61,31 @@ public class Settings {
         public String TtsModel = "New";
         public int reloadRange = 30;
         public int loadedRange = 100;
-        public java.util.List<TTSmodel> TTSmodelList = new ArrayList<>();
+        public List<TTSmodel> TTSmodelList = new ArrayList<>();
+    }
+
+    public List<String> modelNameList() {
+        List<String> modelNameList = new ArrayList<>();
+        for (TTSmodel model : settings.TTSmodelList) {
+            modelNameList.add(model.name);
+            System.out.println("Name added");
+            System.out.println("This is ithe model added" + model.name);
+
+        }
+        System.out.println("Modle List");
+        System.out.print(modelNameList);
+        return modelNameList;
+    }
+
+    public TTSmodel getModel(String modelName) {
+        for (TTSmodel model : settings.TTSmodelList) {
+            if (model.name.equals(modelName)) {
+                return model;
+
+            }
+
+        }
+        return new TTSmodel();
     }
 
     public TTSmodel loadModel(String modelName) {
@@ -71,7 +105,7 @@ public class Settings {
             System.out.println("Save successfull");
             System.out.print(settings);
             gson.toJson(settings, writer);
-            
+
         } catch (IOException e) {
             throw new RuntimeException("Failed to save audiobooks", e);
         }
