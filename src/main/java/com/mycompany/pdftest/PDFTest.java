@@ -47,11 +47,10 @@ public class PDFTest {
         // TempVar for testing
         //0 Is just for testing later it will be changed to get from the saved data.
         playState test = new playState(0, book);
-        Settings initialSettings = new Settings();
 
         JLayeredPane fileExplorer = new JLayeredPane();
         JLayeredPane audioBook = gui.makePane(frame, test);
-        JScrollPane settings = SettingsGui.createSettingsGUI(initialSettings.getSettingsValues());
+        JScrollPane settings = SettingsGui.createSettingsGUI(new Settings());
         CardLayout cardLayout = new CardLayout();
         JPanel screens = new JPanel(cardLayout);
 

@@ -25,8 +25,9 @@ import javax.swing.SpinnerNumberModel;
 public class SettingsGui {
 
 
-    static JScrollPane createSettingsGUI(SettingsValues initialSettings) {
-
+    static JScrollPane createSettingsGUI(Settings settings) {
+        
+        SettingsValues initialSettings = settings.getSettingsValues();
         JPanel settingsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -59,7 +60,6 @@ public class SettingsGui {
         settingsPanel.add(
                 new JLabel("Set Chunk Loaded Range"), gbc);
 
-        int initialLoadedRange = 100;
         int minLoadedRange = 25;
         int maxLoadedRange = 500;
         int step = 5;
@@ -79,7 +79,6 @@ public class SettingsGui {
         settingsPanel.add(
                 new JLabel("Set Chunk Reloaded Range"), gbc);
 
-        int initialReloadedRange = 100;
         int minReloadedRange = 25;
         int maxReloadedRange = 500;
         gbc.gridx = 1;
@@ -239,13 +238,21 @@ public class SettingsGui {
 
             // Here you can save the data as needed (e.g., save to a file, database, etc.)
             System.out.println("Progress Bar Enabled: " + progressBarEnabled);
+            initialSettings.showProgressBar = progressBarEnabled;
+            
             System.out.println("Chunk Loaded Range: " + chunkLoadedRange);
+            initialSettings.loadedRange = chunkLoadedRange;
+            
             System.out.println("Chunk Reloaded Range: " + chunkReloadedRange);
+            initialSettings.reloadRange = chunkReloadedRange;
+            
+            // All of these requer more work because of the model list.
             System.out.println("TTS Name: " + ttsName);
             System.out.println("TTS Model: " + ttsModel);
             System.out.println("TTS Addr: " + ttsAddr);
             System.out.println("Voices: " + voicesList);
             System.out.println("Model Name: " + model);
+            settings.save();
         }
         );
 

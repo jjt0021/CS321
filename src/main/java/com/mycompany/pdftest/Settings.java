@@ -19,7 +19,7 @@ import java.util.ArrayList;
  */
 public class Settings {
 
-    private final File settingsFile = new File("AudioBookDB.json");// This should not change, but stll makes it easier to change if we decide to have a different dir for steaming and file exporation.
+    private final File settingsFile = new File("Settings.json");// This should not change, but stll makes it easier to change if we decide to have a different dir for steaming and file exporation.
     private final Gson gson = new Gson();
     // private Type type = new TypeToken<java.util.List<AudioBookDB.AudioBook>>() {}.getType();
     private SettingsValues settings;
@@ -66,8 +66,12 @@ public class Settings {
 
     // This needs save gaurds, so the user can not input bad values.
     public void save() {
+        System.out.println("Save atemped");
         try (Writer writer = new FileWriter(settingsFile)) {
+            System.out.println("Save successfull");
+            System.out.print(settings);
             gson.toJson(settings, writer);
+            
         } catch (IOException e) {
             throw new RuntimeException("Failed to save audiobooks", e);
         }
