@@ -2,11 +2,14 @@ package com.mycompany.pdftest;
 
 import com.mycompany.pdftest.Settings;
 import com.mycompany.pdftest.Settings.SettingsValues;
+import com.mycompany.pdftest.Settings.TTSmodel;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -99,11 +102,11 @@ public class SettingsGui {
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        JComboBox<String> themeBox = new JComboBox<>(
+        JComboBox<String> voiceBox = new JComboBox<>(
                 new String[]{"alloy", "echo", "sage"}
         );
 
-        settingsPanel.add(themeBox, gbc);
+        settingsPanel.add(voiceBox, gbc);
 
         row++;
 
@@ -137,6 +140,16 @@ public class SettingsGui {
         JTextField voices = new JTextField();
         JTextField modelName = new JTextField();
 
+        // In case the model is deleted set it to New
+        if (!settings.modelNameList().contains(initialSettings.TtsModel)) {
+            initialSettings.TtsModel = "New";
+        }
+
+        TTSmodel initaialModel = settings.getModel(initialSettings.TtsModel);
+        TTSURL.setText(initaialModel.URL);
+        voices.setText(String.join(", ", initaialModel.voices));
+        modelName.setText(initaialModel.name);
+
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         JComboBox<String> modelSelector = new JComboBox<>(
@@ -157,6 +170,20 @@ public class SettingsGui {
         }
         );
         settingsPanel.add(modelSelector, gbc);
+        row++;
+
+        // Model Name
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0;
+
+        settingsPanel.add(new JLabel("Model Name:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+
+        settingsPanel.add(modelName, gbc);
+
         row++;
 
         settingsPanel.add(
@@ -191,20 +218,6 @@ public class SettingsGui {
 
         row++;
 
-        // Model Name
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.weightx = 0;
-
-        settingsPanel.add(new JLabel("Model Name:"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-
-        settingsPanel.add(modelName, gbc);
-
-        row++;
-
         // Spaceing to make sure the content does not gather at the bottom  
         gbc.gridx = 0;
         gbc.gridy = row;
@@ -229,11 +242,35 @@ public class SettingsGui {
             boolean progressBarEnabled = notificationsCheck.isSelected();
             int chunkLoadedRange = (Integer) loadedRange.getValue();
             int chunkReloadedRange = (Integer) reloadedRange.getValue();
-            String ttsName = (String) themeBox.getSelectedItem();
+            String voiceSelected = (String) voiceBox.getSelectedItem();
             String ttsModel = (String) modelSelector.getSelectedItem();
             String ttsAddr = TTSURL.getText();
             String voicesList = voices.getText();
             String model = modelName.getText();
+            String selectedModel = (String) modelSelector.getSelectedItem();
+            
+            
+            
+            // I need to check if everything is entered correctly.
+            // The end user can not name a model new. This is to prevent that
+            // This only matter if JComboBox is New
+            
+            if (selectedModel.equals("New")){
+                if (settings.modelNameList().contains(initaialModel.name)){
+                
+                    // TODO: give the user an error.
+                    //Cut out of the saving
+                
+                
+                }
+
+            
+            }
+
+            List<String> listVoices = Arrays.asList(voicesList.split(","));
+            for (String voice : listVoices) {
+                voice.strip();
+            }
 
             // Here you can save the data as needed (e.g., save to a file, database, etc.)
             System.out.println("Progress Bar Enabled: " + progressBarEnabled);
@@ -246,7 +283,7 @@ public class SettingsGui {
             initialSettings.reloadRange = chunkReloadedRange;
 
             // All of these requer more work because of the model list.
-            System.out.println("TTS Name: " + ttsName);
+            System.out.println("TTS Name: " + voiceSelected);
             System.out.println("TTS Model: " + ttsModel);
             System.out.println("TTS Addr: " + ttsAddr);
             System.out.println("Voices: " + voicesList);

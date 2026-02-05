@@ -87,6 +87,21 @@ public class Settings {
         }
         return new TTSmodel();
     }
+    
+    public void updateModelList (TTSmodel model){
+        List<String> modelNamesList = modelNameList();
+        if (modelNamesList.contains(model.name)){
+        
+        // Replace 
+        
+            return;
+        }
+        
+        
+        settings.TTSmodelList.add(model);
+    
+    
+    }
 
     public TTSmodel loadModel(String modelName) {
         // Finds if the model is in the list and if not it makes a new one
