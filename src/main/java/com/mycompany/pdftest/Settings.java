@@ -92,15 +92,20 @@ public class Settings {
     public void updateModelList(TTSmodel inputModel) {
         List<String> modelNamesList = modelNameList();
         if (modelNamesList.contains(inputModel.name)) {
-
+            TTSmodel modelToRemove = null;
             // Remove  The same model if it exist. If it is the same model we just add it back after, so it does not matter.
+            // WE CAN NOT REMOVE A MODEL WHILE LOOPING OVER EVERY ITEM IN A LIST
             for (TTSmodel model : settings.TTSmodelList) {
                 if (model.name.equals(inputModel.name)) {
-                    settings.TTSmodelList.remove(model);
+                    modelToRemove = model;
+                    System.out.println("This is the model that is being removed - " + inputModel.name);
+                    break;
                 }
             }
 
-            return;
+            if (modelToRemove != null) {
+                settings.TTSmodelList.remove(modelToRemove);
+            }
         }
 
         System.out.println("A NEW MODEL IS BEING ADDED");

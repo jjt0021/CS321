@@ -158,6 +158,9 @@ public class SettingsGui {
                 // This converts the list to a string of the model names because JCOmboBox does not take strings
                 settings.modelNameList().toArray(new String[0])
         );
+        
+        System.out.println("This is the Current Model Name that should be deault - " + initialSettings.TtsModel);
+        modelSelector.setSelectedItem(initialSettings.TtsModel);
 
         modelSelector.addActionListener(e
                 -> {
@@ -307,9 +310,9 @@ public class SettingsGui {
             // All of these requer more work because of the model list.
             System.out.println("TTS Name: " + voiceSelected);
             //System.out.println("TTS Model: " + ttsModel);
-            System.out.println("TTS Addr: " + ttsAddr);
-            System.out.println("Voices: " + voicesList);
-            //System.out.println("Model Name: " + model);
+
+            initialSettings.TtsModel = TTSModelName;
+            
             settings.save();
         }
         );
