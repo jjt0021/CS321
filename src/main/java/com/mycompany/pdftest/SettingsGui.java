@@ -146,10 +146,12 @@ public class SettingsGui {
             initialSettings.TtsModel = "New";
         }
 
+        // Set the Inital Values
         TTSmodel initaialModel = settings.getModel(initialSettings.TtsModel);
         TTSURL.setText(initaialModel.URL);
         voices.setText(String.join(", ", initaialModel.voices));
         modelName.setText(initaialModel.name);
+        apiKey.setText(initaialModel.apiKey);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
