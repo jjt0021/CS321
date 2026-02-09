@@ -62,6 +62,10 @@ public class Settings {
         public int reloadRange = 30;
         public int loadedRange = 100;
         public List<TTSmodel> TTSmodelList = new ArrayList<>();
+
+        void updateModelList(TTSmodel newModel) {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        }
     }
 
     public List<String> modelNameList() {
@@ -87,20 +91,23 @@ public class Settings {
         }
         return new TTSmodel();
     }
-    
-    public void updateModelList (TTSmodel model){
+
+    public void updateModelList(TTSmodel inputModel) {
         List<String> modelNamesList = modelNameList();
-        if (modelNamesList.contains(model.name)){
-        
-        // Replace 
-        
+        if (modelNamesList.contains(inputModel.name)) {
+
+            // Remove  The same model if it exist. If it is the same model we just add it back after, so it does not matter.
+            for (TTSmodel model : settings.TTSmodelList) {
+                if (model.name.equals(inputModel.name)) {
+                    settings.TTSmodelList.remove(model);
+                }
+            }
+
             return;
         }
-        
-        
-        settings.TTSmodelList.add(model);
-    
-    
+
+        settings.TTSmodelList.add(inputModel);
+
     }
 
     public TTSmodel loadModel(String modelName) {

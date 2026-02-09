@@ -139,6 +139,7 @@ public class SettingsGui {
         JTextField TTSURL = new JTextField();
         JTextField voices = new JTextField();
         JTextField modelName = new JTextField();
+        JTextField apiKey = new JTextField();
 
         // In case the model is deleted set it to New
         if (!settings.modelNameList().contains(initialSettings.TtsModel)) {
@@ -218,6 +219,21 @@ public class SettingsGui {
 
         row++;
 
+        // Api Key
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0;
+
+        settingsPanel.add(
+                new JLabel("API Key:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+
+        settingsPanel.add(apiKey, gbc);
+
+        row++;
+
         // Spaceing to make sure the content does not gather at the bottom  
         gbc.gridx = 0;
         gbc.gridy = row;
@@ -243,34 +259,37 @@ public class SettingsGui {
             int chunkLoadedRange = (Integer) loadedRange.getValue();
             int chunkReloadedRange = (Integer) reloadedRange.getValue();
             String voiceSelected = (String) voiceBox.getSelectedItem();
-            String ttsModel = (String) modelSelector.getSelectedItem();
+            String ttsModelSelected = (String) modelSelector.getSelectedItem();
+
+            // New Model Vars
             String ttsAddr = TTSURL.getText();
-            String voicesList = voices.getText();
-            String model = modelName.getText();
-            String selectedModel = (String) modelSelector.getSelectedItem();
-            
-            
-            
+            String voicesString = voices.getText();
+            String TTSModelName = modelName.getText();
+            String apiKeyValue = apiKey.getText();
+
+            List<String> voicesList = Arrays.asList(voicesString.split(","));
+            for (String voice : voicesList) {
+                voice.strip();
+            }
+
             // I need to check if everything is entered correctly.
             // The end user can not name a model new. This is to prevent that
             // This only matter if JComboBox is New
-            
-            if (selectedModel.equals("New")){
-                if (settings.modelNameList().contains(initaialModel.name)){
-                
+            if (ttsModelSelected.equals("New")) {
+                if (settings.modelNameList().contains(initaialModel.name)) {
+
                     // TODO: give the user an error.
                     //Cut out of the saving
-                
-                
+                    //Also combine 
                 }
-
-            
             }
 
-            List<String> listVoices = Arrays.asList(voicesList.split(","));
-            for (String voice : listVoices) {
-                voice.strip();
-            }
+            Settings.TTSmodel newModel = settings.new TTSmodel();
+            newModel.URL = ttsAddr;
+            newModel.apiKey = apiKeyValue;
+            newModel.name = TTSModelName;
+            newModel.voices = voicesList;
+            initialSettings.updateModelList(newModel);
 
             // Here you can save the data as needed (e.g., save to a file, database, etc.)
             System.out.println("Progress Bar Enabled: " + progressBarEnabled);
@@ -284,10 +303,10 @@ public class SettingsGui {
 
             // All of these requer more work because of the model list.
             System.out.println("TTS Name: " + voiceSelected);
-            System.out.println("TTS Model: " + ttsModel);
+            //System.out.println("TTS Model: " + ttsModel);
             System.out.println("TTS Addr: " + ttsAddr);
             System.out.println("Voices: " + voicesList);
-            System.out.println("Model Name: " + model);
+            //System.out.println("Model Name: " + model);
             settings.save();
         }
         );
