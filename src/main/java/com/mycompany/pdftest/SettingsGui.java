@@ -161,12 +161,14 @@ public class SettingsGui {
 
         modelSelector.addActionListener(e
                 -> {
-            String selectedItem = (String) modelSelector.getSelectedItem();
-
+            String modelSelectedString = (String) modelSelector.getSelectedItem();
+            
+            Settings.TTSmodel modelSelectedObject = settings.getModel(modelSelectedString);
             //TODO: I need to acually implemenmt this with the settings
-            TTSURL.setText(selectedItem);
-            voices.setText(selectedItem);
-            modelName.setText(initialSettings.TtsModel);
+            TTSURL.setText(modelSelectedObject.URL);
+            apiKey.setText(modelSelectedObject.apiKey);
+            voices.setText(String.join(", ", modelSelectedObject.voices));
+            modelName.setText(modelSelectedString);
 
         }
         );
@@ -254,6 +256,7 @@ public class SettingsGui {
         saveButton.addActionListener(e
                 -> {
 
+            System.out.println("A save has been started.");
             // Get the settings from all of the boxes
             boolean progressBarEnabled = notificationsCheck.isSelected();
             int chunkLoadedRange = (Integer) loadedRange.getValue();
@@ -289,7 +292,7 @@ public class SettingsGui {
             newModel.apiKey = apiKeyValue;
             newModel.name = TTSModelName;
             newModel.voices = voicesList;
-            initialSettings.updateModelList(newModel);
+            settings.updateModelList(newModel);
 
             // Here you can save the data as needed (e.g., save to a file, database, etc.)
             System.out.println("Progress Bar Enabled: " + progressBarEnabled);

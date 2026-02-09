@@ -63,9 +63,6 @@ public class Settings {
         public int loadedRange = 100;
         public List<TTSmodel> TTSmodelList = new ArrayList<>();
 
-        void updateModelList(TTSmodel newModel) {
-            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-        }
     }
 
     public List<String> modelNameList() {
@@ -105,6 +102,9 @@ public class Settings {
 
             return;
         }
+
+        System.out.println("A NEW MODEL IS BEING ADDED");
+        System.out.println(inputModel);
 
         settings.TTSmodelList.add(inputModel);
 
