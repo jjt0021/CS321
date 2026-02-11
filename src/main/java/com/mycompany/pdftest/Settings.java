@@ -2,6 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+
+/*
+It would have been easier to map the model name to the model object. If some one 
+wants they can implement it that way.
+
+**/
 package com.mycompany.pdftest;
 
 import com.google.gson.Gson;

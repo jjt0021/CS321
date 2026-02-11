@@ -15,7 +15,6 @@ import com.mycompany.pdftest.SettingsGui;
 import com.mycompany.pdftest.playState;
 import com.mycompany.pdftest.TextUtils;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,10 +46,13 @@ public class PDFTest {
         // TempVar for testing
         //0 Is just for testing later it will be changed to get from the saved data.
         playState test = new playState(0, book);
+        Settings settingsObj = new Settings();
 
         JLayeredPane fileExplorer = new JLayeredPane();
-        JLayeredPane audioBook = gui.makePane(frame, test);
-        JScrollPane settings = SettingsGui.createSettingsGUI(new Settings());
+        gui guiInstance = new gui(test, settingsObj);
+        JLayeredPane audioBook = guiInstance.makePane(frame, test);
+
+        JScrollPane settings = SettingsGui.createSettingsGUI(settingsObj);
         CardLayout cardLayout = new CardLayout();
         JPanel screens = new JPanel(cardLayout);
 

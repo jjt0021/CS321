@@ -20,6 +20,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
+import com.mycompany.pdftest.Audio;
+import com.mycompany.pdftest.Settings;
+import com.mycompany.pdftest.Settings.SettingsValues;
+import com.mycompany.pdftest.Settings.TTSmodel;
+
 /**
  *
  * @author elimo
@@ -27,14 +32,23 @@ import javax.swing.SwingConstants;
 public class gui {
 
     private playState playState;
+    private Settings settingsObject;
+    private SettingsValues loadedValues;
+
+    private TTSmodel loadedModel;
     private static JPanel panel;
     private static JScrollPane scrollPane;
 
-    public gui(playState playState) {
+    // TODO: load models.
+    public gui(playState playState, Settings settingsObject) {
         this.playState = playState;
+        this.settingsObject = settingsObject;
+        this.loadedValues = settingsObject.getSettingsValues();
+        this.loadedModel = settingsObject.getModel(this.loadedValues.TtsModel);
+
     }
 
-    public static JScrollPane makeScrollPane(ArrayList<String> window, playState playState) {
+    public JScrollPane makeScrollPane(ArrayList<String> window, playState playState) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int width = (int) screenSize.getWidth();
 
@@ -48,7 +62,11 @@ public class gui {
         // Reload content
         panel.removeAll();
 
+        // This makes all of the buttons and adds them to the scroll pane.
         for (int i = 0; i < window.size(); i++) {
+            //TODO; use the real settings
+
+            Audio newAudio = new Audio(window.get(i), loadedValues.voice, loadedModel.URL, loadedModel.name);
             JButton button = new JButton("<html><div align='left'>" + window.get(i) + "</div></html>");
 
             // I had a bug where I forgot to add startChunk to i resulting it not reloading properly.
@@ -67,6 +85,10 @@ public class gui {
                 int chunkNum = (int) ((JButton) e.getSource()).getClientProperty("chunkNum");
                 playState.setCurrentChunk(chunkNum);
                 System.out.println("Current chunk updated: " + chunkNum);
+
+                if (playState.reloadCheck()) {
+                    makeScrollPane(playState.reloadChunks(), playState);
+                }
             });
 
             panel.add(button);
@@ -87,9 +109,9 @@ public class gui {
         return scrollPane;
     }
 
-    public static JLayeredPane makePane(JFrame frame, playState playstate) throws IOException {
+    public JLayeredPane makePane(JFrame frame, playState playstate) throws IOException {
 
-        JScrollPane scrollPane = new JScrollPane(gui.makeScrollPane(playstate.reloadChunks(), playstate));
+        JScrollPane scrollPane = new JScrollPane(makeScrollPane(playstate.reloadChunks(), playstate));
 
         // This section is for all of the action buttons like play pause etc.
         JButton play = new JButton("PLAY");

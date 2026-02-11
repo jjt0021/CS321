@@ -45,12 +45,6 @@ public class playState {
         this.currentChunk = currentChunk;
         // I need to find some way to reset the the view.
 
-        if (reloadCheck()) {
-            SwingUtilities.invokeLater(() -> {
-                gui.makeScrollPane(reloadChunks(), this);
-            });
-        }
-
     }
 
     public int getCurrentChunk() {
