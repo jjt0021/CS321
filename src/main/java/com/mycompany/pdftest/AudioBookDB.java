@@ -22,7 +22,7 @@ import java.lang.reflect.Type;
  */
 /*
 You should upload and downlaod a list of objects
-
+The data base will store the path to different books, bookmarks, and currentchunks
 **/
 public class AudioBookDB {
 
@@ -39,14 +39,11 @@ public class AudioBookDB {
         public List<String> bookMakredText = new ArrayList<>();
         public List<Integer> bookMarkID = new ArrayList<>();
 
+        public AudioBook (String filePath){
+            this.filePath = filePath;
+        }
     }
 
-    // I chose not to include a contructor so it looks better in the json. This acts as the contructor.
-    public AudioBook makeAudioBook(String filePath) {
-        AudioBook newBook = new AudioBook();
-        newBook.filePath = filePath;
-        return newBook;
-    }
 
     public AudioBookDB() {
         load();
@@ -114,14 +111,19 @@ public class AudioBookDB {
     }
 
     public void addAudioBook(String filePath) {
-        audioBooks.add(makeAudioBook(filePath));
+        audioBooks.add(new AudioBook(filePath));
     }
 
     public void removeAudioBook(String filePath) {
+        AudioBook bookToRemove = null;
         for (AudioBook book : audioBooks) {
             if (book.filePath == filePath) {
-                audioBooks.remove(book);
+                bookToRemove = book;
+                break;
             }
         }
+        
+        // We need to do this outside of the loop becuase you can not remove an object form a list while loop through it.
+        audioBooks.remove(bookToRemove);
     }
 }
