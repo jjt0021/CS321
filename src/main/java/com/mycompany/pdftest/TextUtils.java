@@ -16,6 +16,8 @@ import org.apache.pdfbox.text.PDFTextStripper;
  *
  * @author elimo
  */
+
+// This classes job is to get text from a pdf and spit it into chunks
 public class TextUtils {
 
     public static String getTextFromPdf(File pdfFile) throws IOException {

@@ -24,6 +24,7 @@ import java.util.List;
  *
  * @author elimo
  */
+// This classes job is to save load and update a settings file.
 public class Settings {
 
     private final File settingsFile = new File("Settings.json");// This should not change, but stll makes it easier to change if we decide to have a different dir for steaming and file exporation.
@@ -132,6 +133,7 @@ public class Settings {
     }
 
     // This needs save gaurds, so the user can not input bad values.
+    // Those safe gaurds will be in Settings GUI.
     public void save() {
         System.out.println("Save atemped");
         try (Writer writer = new FileWriter(settingsFile)) {

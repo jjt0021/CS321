@@ -20,10 +20,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
-import com.mycompany.pdftest.Audio;
 import com.mycompany.pdftest.Settings;
 import com.mycompany.pdftest.Settings.SettingsValues;
-import com.mycompany.pdftest.Settings.TTSmodel;
 
 /**
  *
@@ -35,7 +33,6 @@ public class gui {
     private Settings settingsObject;
     private SettingsValues loadedValues;
 
-    private TTSmodel loadedModel;
     private static JPanel panel;
     private static JScrollPane scrollPane;
 
@@ -44,7 +41,6 @@ public class gui {
         this.playState = playState;
         this.settingsObject = settingsObject;
         this.loadedValues = settingsObject.getSettingsValues();
-        this.loadedModel = settingsObject.getModel(this.loadedValues.TtsModel);
 
     }
 
@@ -64,9 +60,6 @@ public class gui {
 
         // This makes all of the buttons and adds them to the scroll pane.
         for (int i = 0; i < window.size(); i++) {
-            //TODO; use the real settings
-
-            Audio newAudio = new Audio(window.get(i), loadedValues.voice, loadedModel.URL, loadedModel.name);
             JButton button = new JButton("<html><div align='left'>" + window.get(i) + "</div></html>");
 
             // I had a bug where I forgot to add startChunk to i resulting it not reloading properly.

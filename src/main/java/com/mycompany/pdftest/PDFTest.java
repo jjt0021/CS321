@@ -14,6 +14,8 @@ import com.mycompany.pdftest.gui;
 import com.mycompany.pdftest.SettingsGui;
 import com.mycompany.pdftest.playState;
 import com.mycompany.pdftest.TextUtils;
+import com.mycompany.pdftest.Settings.SettingsValues;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -45,8 +47,9 @@ public class PDFTest {
 
         // TempVar for testing
         //0 Is just for testing later it will be changed to get from the saved data.
-        playState test = new playState(0, book);
         Settings settingsObj = new Settings();
+        SettingsValues initalSettings = settingsObj.getSettingsValues();
+        playState test = new playState(0, book, initalSettings.loadedRange, initalSettings.reloadRange);
 
         JLayeredPane fileExplorer = new JLayeredPane();
         gui guiInstance = new gui(test, settingsObj);
@@ -59,11 +62,11 @@ public class PDFTest {
         // The Fist add is shown first, so we should add the FIle explorer first.
         //screens.add(fileExplorer, "File Explorer");
         //screens.add(settings, "settings");
-        screens.add(settings, "Settings");
+        //screens.add(settings, "Settings");
         screens.add(audioBook, "audioBook");
         // We will need to add listeners to every menue
         // The code will look something like this         
-        // startButton.addActionListener(e -> cardLayout.show(cards, "game"));
+        // startButton.addActionListener(e -> cardLayout.show(cards, "Settings"));
 
         frame.setContentPane(screens);
 
@@ -84,3 +87,14 @@ public class PDFTest {
     }
 
 }
+
+/*
+Implementaion Notes
+
+We should update the current chunk with highlighting
+The current chunk will be updated in the highlighted chunk function
+We should create the adio objects when we make the 
+
+The file explorer should handle checking if the pdf file is good.
+
+**/

@@ -1,6 +1,7 @@
 package com.mycompany.pdftest;
 
 import java.util.ArrayList;
+
 import javax.swing.SwingUtilities;
 
 /*
@@ -11,6 +12,8 @@ import javax.swing.SwingUtilities;
  *
  * @author elimo
  */
+
+//This classes job keeps track of the current chunk, checks if a reload is needed for the gui, and keeps track of if the playback is true
 public class playState {
 
     private int currentChunk;
@@ -26,7 +29,9 @@ public class playState {
     private ArrayList<String> fullBook;
     private ArrayList<Audio> loadWindowAudio;
 
-    public playState(int currentChunk, ArrayList<String> fullBook) {
+    public playState(int currentChunk, ArrayList<String> fullBook, int loadedRange, int reloadRange) {
+        this.loadedRange = loadedRange;
+        this.reloadRange = reloadRange;
         this.currentChunk = currentChunk;
         this.fullBook = fullBook;
         startChunk = Math.max(0, (currentChunk - loadedRange));
@@ -71,6 +76,7 @@ public class playState {
         return false;
     }
 
+    // Might want to move to GUI.
     public ArrayList<String> reloadChunks() {
 
         //System.out.println("This is the full book" + fullBook);

@@ -26,6 +26,15 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  */
 public class Audio {
 
+    public enum AudioState {
+        MISSING,
+        GENERATING,
+        READY,
+        PLAYING,
+        PAUSED,
+        FAILED
+    }
+
     private String text;
     private String voice;
     private String url;
@@ -53,6 +62,7 @@ public class Audio {
         // This will be where we request audio.
         HttpClient client = HttpClient.newHttpClient();
 
+        //These are just test values.
         /*     
         String model = "voxcpm";
         String voice = "sheldon";
