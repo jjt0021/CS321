@@ -35,31 +35,38 @@ public class Audio {
         FAILED
     }
 
+    AudioState currentState = AudioState.MISSING;
     private String text;
     private String voice;
     private String url;
     private String model;
-
-    private boolean isGenerating;
+    int chunk;
 
     private Clip clip;
     private long clipPosition;
     private String fileURL;
 
-    public Audio(String text, String voice, String url, String model) {
+    public Audio(String text, String voice, String url, String model,int chunk) {
         this.text = text;
         this.url = url;
         this.voice = voice;
         this.model = model;
-        this.isGenerating = true;
+        this.chunk = chunk;
     }
 
     public boolean getIsGenerating() {
-        return isGenerating;
+        if(currentState == currentState.GENERATING){
+            return true;
+        }else {
+        
+        return false;
+        }
+        
     }
 
     public void requestAudio() {
         // This will be where we request audio.
+        currentState = AudioState.GENERATING;
         HttpClient client = HttpClient.newHttpClient();
 
         //These are just test values.
@@ -87,6 +94,7 @@ public class Audio {
         CompletableFuture<HttpResponse<byte[]>> responseFuture
                 = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
 
+        // This happens when the request is completed
         responseFuture.thenAccept(response -> {
             try {
                 if (response.statusCode() != 200) {
@@ -94,8 +102,9 @@ public class Audio {
                     return;
                 }
 
-                Path outputPath = Path.of("speech.mp3");
+                Path outputPath = Path.of("%s.mp3", String.valueOf(chunk));
                 Files.write(outputPath, response.body());
+                currentState = AudioState.READY;
                 System.out.println("Saved speech to " + outputPath.toAbsolutePath());
             } catch (IOException e) {
                 e.printStackTrace();

@@ -1,6 +1,8 @@
 package com.mycompany.pdftest;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
 
@@ -12,7 +14,6 @@ import javax.swing.SwingUtilities;
  *
  * @author elimo
  */
-
 //This classes job keeps track of the current chunk, checks if a reload is needed for the gui, and keeps track of if the playback is true
 public class playState {
 
@@ -28,6 +29,50 @@ public class playState {
 
     private ArrayList<String> fullBook;
     private ArrayList<Audio> loadWindowAudio;
+
+    private String audioCachDirPath = "/cach";
+
+    public void prefetchAndCleanUP() {
+        //TODO: Need to check if some chunks need to be removed
+
+        File directory = new File(audioCachDirPath);
+
+        File[] files = directory.listFiles();
+
+        List<File> filesToDelete = null;
+
+        for (File file : files) {
+
+            // This checks if the file name is large enough to even be an .mp3 file
+            //5 is the minimum number of cars in a .mp4 file
+            String fullFileName = file.getName();
+            if (fullFileName.length() < 5) {
+                filesToDelete.add(file);
+                continue;
+            }
+
+            int chunkNum = Integer.parseInt(fullFileName.substring(0, fullFileName.length() - 4));
+           
+            // TODO - Need to Add support for choosing the cash size
+            
+            int cachSize = 5;
+            // If the file needs to be removed. 4 is the number of chars in ".mp3"
+            if (fullFileName.substring(fullFileName.length() - 4) != ".mp3" || chunkNum <= currentChunk - cachSize || chunkNum >= currentChunk + cachSize) {
+                filesToDelete.add(file);
+            }
+
+        }
+
+        for (File file : filesToDelete) {
+            if (file.delete()) {
+                System.out.println("File deleted successfully");
+            } else {
+                System.out.println("Failed to delete the file");
+            }
+        }
+        
+        //TODO: need to add the prefetching logic.
+    }
 
     public playState(int currentChunk, ArrayList<String> fullBook, int loadedRange, int reloadRange) {
         this.loadedRange = loadedRange;
