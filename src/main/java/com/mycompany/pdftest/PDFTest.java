@@ -49,7 +49,8 @@ public class PDFTest {
         //0 Is just for testing later it will be changed to get from the saved data.
         Settings settingsObj = new Settings();
         SettingsValues initalSettings = settingsObj.getSettingsValues();
-        playState test = new playState(0, book, initalSettings.loadedRange, initalSettings.reloadRange);
+        String bookName = pdf.getName();
+        playState test = new playState(0, book, initalSettings.loadedRange, initalSettings.reloadRange, bookName);
 
         JLayeredPane fileExplorer = new JLayeredPane();
         gui guiInstance = new gui(test, settingsObj);

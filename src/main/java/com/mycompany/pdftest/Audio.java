@@ -40,18 +40,20 @@ public class Audio {
     private String voice;
     private String url;
     private String model;
+    private String bookName;
     int chunk;
 
     private Clip clip;
     private long clipPosition;
     private String fileURL;
 
-    public Audio(String text, String voice, String url, String model,int chunk) {
+    public Audio(String text, String voice, String url, String model,int chunk, String bookName) {
         this.text = text;
         this.url = url;
         this.voice = voice;
         this.model = model;
         this.chunk = chunk;
+        this.bookName = bookName;
     }
 
     public boolean getIsGenerating() {
@@ -102,7 +104,7 @@ public class Audio {
                     return;
                 }
 
-                Path outputPath = Path.of("%s.mp3", String.valueOf(chunk));
+                Path outputPath = Path.of("book_%s_chunk_%s.mp3", bookName, String.valueOf(chunk));
                 Files.write(outputPath, response.body());
                 currentState = AudioState.READY;
                 System.out.println("Saved speech to " + outputPath.toAbsolutePath());

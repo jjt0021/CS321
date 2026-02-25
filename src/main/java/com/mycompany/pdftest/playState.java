@@ -31,10 +31,10 @@ public class playState {
     private ArrayList<Audio> loadWindowAudio;
 
     private String audioCachDirPath = "/cach";
+    private String bookName;
 
     public void prefetchAndCleanUP() {
         //TODO: Need to check if some chunks need to be removed
-
         File directory = new File(audioCachDirPath);
 
         File[] files = directory.listFiles();
@@ -51,18 +51,40 @@ public class playState {
                 continue;
             }
 
-            int chunkNum = Integer.parseInt(fullFileName.substring(0, fullFileName.length() - 4));
-           
-            // TODO - Need to Add support for choosing the cash size
-            
-            int cachSize = 5;
-            // If the file needs to be removed. 4 is the number of chars in ".mp3"
-            if (fullFileName.substring(fullFileName.length() - 4) != ".mp3" || chunkNum <= currentChunk - cachSize || chunkNum >= currentChunk + cachSize) {
+            // Check for the correct extention
+            String extention = fullFileName.substring(fullFileName.length() - 4);
+            if (extention != ".mp3") {
                 filesToDelete.add(file);
+                continue;
+            }
+
+            // Gets the chunk number and the File name.\
+            // I chose to manually handel the cach becuase it works better when reloading
+            // The only reason the name is not just the chunk number, is so the if you exit the program and go back to the same bookafter you log back in, it will still have the cached chunks.
+            String fileName = fullFileName.substring(5, fullFileName.length() - 4);
+
+            String[] parts = fileName.split("_chunk_");
+            String audioFileBookName = parts[0];              // just the book name
+            int chunkNum = Integer.parseInt(parts[1]);  // just the chunk number
+
+            // TODO - Need to Add support for choosing the cash size
+            int cachSize = 5;
+
+            // Checks if the chunk is in the cach range.
+            if (chunkNum <= currentChunk - cachSize || chunkNum >= currentChunk + cachSize) {
+                filesToDelete.add(file);
+                continue;
+            }
+
+            // Checks if the chunk is in the correct book. This is mainly for when you first load the book
+            if (audioFileBookName != bookName) {
+                filesToDelete.add(file);
+                continue;
             }
 
         }
 
+        // Removes all the files that need to be removed.
         for (File file : filesToDelete) {
             if (file.delete()) {
                 System.out.println("File deleted successfully");
@@ -70,11 +92,11 @@ public class playState {
                 System.out.println("Failed to delete the file");
             }
         }
-        
+
         //TODO: need to add the prefetching logic.
     }
 
-    public playState(int currentChunk, ArrayList<String> fullBook, int loadedRange, int reloadRange) {
+    public playState(int currentChunk, ArrayList<String> fullBook, int loadedRange, int reloadRange, String bookName) {
         this.loadedRange = loadedRange;
         this.reloadRange = reloadRange;
         this.currentChunk = currentChunk;
@@ -82,6 +104,7 @@ public class playState {
         startChunk = Math.max(0, (currentChunk - loadedRange));
         endChunk = Math.min(fullBook.size() - 1, (currentChunk + loadedRange));
         this.loadWindowAudio = new ArrayList<>();
+        this.bookName = bookName;
 
     }
 
