@@ -2,7 +2,10 @@ package com.mycompany.pdftest;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
+import com.mycompany.pdftest.Audio;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
@@ -26,8 +29,9 @@ public class playState {
 
     private int loadedRange = 100;
     private int reloadRange = 30;
+    Map<Integer, Audio> cachedWindow = new HashMap<>();
 
-    private ArrayList<String> fullBook;
+    private final ArrayList<String> fullBook;
     private ArrayList<Audio> loadWindowAudio;
 
     private String audioCachDirPath = "/cach";
@@ -39,7 +43,9 @@ public class playState {
 
         File[] files = directory.listFiles();
 
-        List<File> filesToDelete = null;
+        ArrayList<File> filesToDelete = null;
+        // TODO - Need to Add support for choosing the cash size
+        int cachSize = 5;
 
         for (File file : files) {
 
@@ -67,9 +73,6 @@ public class playState {
             String audioFileBookName = parts[0];              // just the book name
             int chunkNum = Integer.parseInt(parts[1]);  // just the chunk number
 
-            // TODO - Need to Add support for choosing the cash size
-            int cachSize = 5;
-
             // Checks if the chunk is in the cach range.
             if (chunkNum <= currentChunk - cachSize || chunkNum >= currentChunk + cachSize) {
                 filesToDelete.add(file);
@@ -94,6 +97,21 @@ public class playState {
         }
 
         //TODO: need to add the prefetching logic.
+        ArrayList<Integer> loadedWindowRange = null;
+        for (int i = currentChunk; i <= i + cachSize; i++) {
+            loadedWindowRange.add(i);
+        }
+
+        // ChatGPT
+        Iterator<Map.Entry<Integer, Audio>> iterator = cachedWindow.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Integer, Audio> entry = iterator.next();
+            if (!loadedWindowRange.contains(entry.getKey())) {
+                iterator.remove();  // safe removal during iteration
+            }
+        }
+        // END of ChatGPT
+
     }
 
     public playState(int currentChunk, ArrayList<String> fullBook, int loadedRange, int reloadRange, String bookName) {
