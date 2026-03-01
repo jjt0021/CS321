@@ -1,12 +1,12 @@
 package com.mycompany.pdftest;
 
-import javax.swing.JScrollPane;
 import java.util.ArrayList;
+import javax.swing.JScrollPane;
 
 /**
  * Constructs the primary visual interface for text display and playback control.
  */
-public class gui {
-    /** Intent: Build a scrollable view of the PDF text with embedded controls. */
+public class PlayerGui {
+    /** Intent: Builds the GUI for the player. */
     public JScrollPane makeScrollPane(ArrayList<String> window, playState playState) { return null; }
 }

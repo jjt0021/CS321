@@ -9,4 +9,7 @@ public class playState {
 
     /** Intent: Fetch audio for upcoming chunks while deleting expired audio from the cache. */
     public void prefetchAndCleanUP() {}
+
+    /** Intent: Check if the audio player has the audio file and playing is active. */
+    public void checkIfCanPlay() {}
 }
