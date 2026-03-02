@@ -73,7 +73,7 @@ public class SettingsGui {
         settingsPanel.add(loadedRange, gbc);
         row++;
 
-        // This is for the chunk loader
+        // This is for Reload range of the GUI
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0;
@@ -89,6 +89,24 @@ public class SettingsGui {
         settingsPanel.add(reloadedRange, gbc);
         row++;
 
+        // This is for Reload range of the GUI
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0;
+
+        settingsPanel.add(new JLabel("Set Chunk Reloaded Range"), gbc);
+
+        int minCacheSize = 1;
+        int maxCacheSize = 10;
+        int cacheStep = 1;
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        JSpinner cacheSize = new JSpinner(new SpinnerNumberModel(initialSettings.cacheSize, minCacheSize, maxCacheSize, cacheStep));
+
+        settingsPanel.add(cacheSize, gbc);
+        row++;
+
         // 
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
@@ -102,6 +120,7 @@ public class SettingsGui {
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
+        //TODO: need to use real voice form settings.
         JComboBox<String> voiceBox = new JComboBox<>(
                 new String[]{"alloy", "echo", "sage"}
         );
@@ -160,14 +179,14 @@ public class SettingsGui {
                 // This converts the list to a string of the model names because JCOmboBox does not take strings
                 settings.modelNameList().toArray(new String[0])
         );
-        
+
         System.out.println("This is the Current Model Name that should be deault - " + initialSettings.TtsModel);
         modelSelector.setSelectedItem(initialSettings.TtsModel);
 
         modelSelector.addActionListener(e
                 -> {
             String modelSelectedString = (String) modelSelector.getSelectedItem();
-            
+
             Settings.TTSmodel modelSelectedObject = settings.getModel(modelSelectedString);
             //TODO: I need to acually implemenmt this with the settings
             TTSURL.setText(modelSelectedObject.URL);
@@ -266,6 +285,8 @@ public class SettingsGui {
             boolean progressBarEnabled = notificationsCheck.isSelected();
             int chunkLoadedRange = (Integer) loadedRange.getValue();
             int chunkReloadedRange = (Integer) reloadedRange.getValue();
+            int cacheSizeInt = (Integer) cacheSize.getValue();
+
             String voiceSelected = (String) voiceBox.getSelectedItem();
             String ttsModelSelected = (String) modelSelector.getSelectedItem();
 
@@ -309,12 +330,15 @@ public class SettingsGui {
             System.out.println("Chunk Reloaded Range: " + chunkReloadedRange);
             initialSettings.reloadRange = chunkReloadedRange;
 
+            System.out.println("cacheSize: " + cacheSizeInt);
+            initialSettings.cacheSize = cacheSizeInt;
+
             // All of these requer more work because of the model list.
             System.out.println("TTS Name: " + voiceSelected);
             //System.out.println("TTS Model: " + ttsModel);
 
             initialSettings.TtsModel = TTSModelName;
-            
+
             settings.save();
         }
         );

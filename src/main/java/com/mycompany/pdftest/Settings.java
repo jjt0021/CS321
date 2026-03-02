@@ -68,6 +68,7 @@ public class Settings {
         public String TtsModel = "New";
         public int reloadRange = 30;
         public int loadedRange = 100;
+        public int cacheSize = 8;
         public List<TTSmodel> TTSmodelList = new ArrayList<>();
 
     }

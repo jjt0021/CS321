@@ -47,23 +47,25 @@ public class Audio {
     private long clipPosition;
     private String fileURL;
 
-    public Audio(String text, String voice, String url, String model,int chunk, String bookName) {
+    public Audio(String text, String voice, String url, String modelName, int chunk, String bookName) {
         this.text = text;
-        this.url = url;
         this.voice = voice;
-        this.model = model;
         this.chunk = chunk;
         this.bookName = bookName;
+
+        this.url = url;
+        this.model = modelName;
+
     }
 
     public boolean getIsGenerating() {
-        if(currentState == currentState.GENERATING){
+        if (currentState == currentState.GENERATING) {
             return true;
-        }else {
-        
-        return false;
+        } else {
+
+            return false;
         }
-        
+
     }
 
     public void requestAudio() {

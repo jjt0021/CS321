@@ -4,10 +4,11 @@ import java.io.File;
 import java.util.ArrayList;
 import com.mycompany.pdftest.Audio;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
-import javax.swing.SwingUtilities;
+import com.mycompany.pdftest.Settings;
+import com.mycompany.pdftest.Settings.SettingsValues;
+import com.mycompany.pdftest.Settings.TTSmodel;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -19,6 +20,10 @@ import javax.swing.SwingUtilities;
  */
 //This classes job keeps track of the current chunk, checks if a reload is needed for the gui, and keeps track of if the playback is true
 public class playState {
+
+    Settings initialSettingObj;
+    SettingsValues initialSettings = initialSettingObj.getSettingsValues();
+    TTSmodel initialModle;
 
     private int currentChunk;
 
@@ -32,18 +37,21 @@ public class playState {
     Map<Integer, Audio> cachedWindow = new HashMap<>();
 
     private final ArrayList<String> fullBook;
-    private ArrayList<Audio> loadWindowAudio;
 
     private String audioCachDirPath = "/cach";
     private String bookName;
 
     public void prefetchAndCleanUP() {
-        //TODO: Need to check if some chunks need to be removed
         File directory = new File(audioCachDirPath);
 
         File[] files = directory.listFiles();
 
-        ArrayList<File> filesToDelete = null;
+        //TODO add error message.
+        if (files == null) {
+            return;
+        }
+
+        ArrayList<File> filesToDelete = new ArrayList<>();
         // TODO - Need to Add support for choosing the cash size
         int cachSize = 5;
 
@@ -59,7 +67,7 @@ public class playState {
 
             // Check for the correct extention
             String extention = fullFileName.substring(fullFileName.length() - 4);
-            if (extention != ".mp3") {
+            if (!extention.equals(".mp3")) {
                 filesToDelete.add(file);
                 continue;
             }
@@ -76,6 +84,8 @@ public class playState {
             // Checks if the chunk is in the cach range.
             if (chunkNum <= currentChunk - cachSize || chunkNum >= currentChunk + cachSize) {
                 filesToDelete.add(file);
+                cachedWindow.remove(chunkNum); // remove from memory too
+
                 continue;
             }
 
@@ -90,6 +100,7 @@ public class playState {
         // Removes all the files that need to be removed.
         for (File file : filesToDelete) {
             if (file.delete()) {
+
                 System.out.println("File deleted successfully");
             } else {
                 System.out.println("Failed to delete the file");
@@ -97,20 +108,14 @@ public class playState {
         }
 
         //TODO: need to add the prefetching logic.
-        ArrayList<Integer> loadedWindowRange = null;
-        for (int i = currentChunk; i <= i + cachSize; i++) {
-            loadedWindowRange.add(i);
-        }
-
-        // ChatGPT
-        Iterator<Map.Entry<Integer, Audio>> iterator = cachedWindow.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<Integer, Audio> entry = iterator.next();
-            if (!loadedWindowRange.contains(entry.getKey())) {
-                iterator.remove();  // safe removal during iteration
+        for (int i = currentChunk; i <= currentChunk + cachSize; i++) {
+            if (cachedWindow.containsKey(i)) {
+                continue;
             }
+
+            //TODO: add audio settings
+            //cachedWindow.put(i, new Audio());
         }
-        // END of ChatGPT
 
     }
 
@@ -121,7 +126,6 @@ public class playState {
         this.fullBook = fullBook;
         startChunk = Math.max(0, (currentChunk - loadedRange));
         endChunk = Math.min(fullBook.size() - 1, (currentChunk + loadedRange));
-        this.loadWindowAudio = new ArrayList<>();
         this.bookName = bookName;
 
     }
