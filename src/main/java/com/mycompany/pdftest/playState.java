@@ -52,51 +52,44 @@ public class playState {
     }
 
     public boolean isIncorectExtention(File file) {
-        int minFileExLength = 5;
         String fileName = file.getName();
-
-        if (fileName.length() < minFileExLength) {
-            return true;
-        }
-
-        String extention = fileName.substring(fileName.length() - minFileExLength - 1);
-        if (!extention.equals(".mp3")) {
-            return true;
-        }
-
-        return false;
+        return (!fileName.endsWith(".mp3"));
     }
 
     public boolean isIncorrectBook(File file) {
-
         String fullFileName = file.getName();
-        String fileName = fullFileName.substring(5, fullFileName.length() - 4);
-
-        String[] parts = fileName.split("_chunk_");
-        String audioFileBookName = parts[0];              // just the book name
-
-        if (audioFileBookName != bookName) {
+        if (!fullFileName.contains("_chunk_") || !fullFileName.startsWith("book_")) {
             return true;
-        } else {
-            return false;
         }
+
+        String fileName = fullFileName.substring(5, fullFileName.length() - 4);
+        String[] parts = fileName.split("_chunk_");
+
+        String audioFileBookName = parts[0];
+
+        return (!audioFileBookName.equals(bookName));
+
     }
 
     public boolean isOutOfCacheWindow(File file) {
         String fullFileName = file.getName();
-        String fileName = fullFileName.substring(5, fullFileName.length() - 4);
+        if (!fullFileName.contains("_chunk_") || !fullFileName.startsWith("book_")) {
+            return true;
+        }
 
+        String fileName = fullFileName.substring(5, fullFileName.length() - 4);
         String[] parts = fileName.split("_chunk_");
 
-        int chunkNum = Integer.parseInt(parts[1]);
-        if (chunkNum <= currentChunk - cacheSize || chunkNum >= currentChunk + cacheSize) {
-            
-            // It would be really annoing to add this anyware else
-            cachedWindow.remove(chunkNum);
+        try {
+            Integer.parseInt(parts[1]);
+        } catch (NumberFormatException e) {
             return true;
-        } else {
-            return false;
         }
+        int chunkNum = Integer.parseInt(parts[1]);
+
+        // It would be really annoing to add this anyware else but better to remove
+        cachedWindow.remove(chunkNum);
+        return (chunkNum <= currentChunk - cacheSize || chunkNum >= currentChunk + cacheSize);
 
     }
 
@@ -104,7 +97,6 @@ public class playState {
 
         for (File file : filesToDelete) {
             if (file.delete()) {
-
                 System.out.println("File deleted successfully");
             } else {
                 System.out.println("Failed to delete the file");
@@ -153,11 +145,6 @@ public class playState {
                 continue;
             }
 
-            if (isOutOfCacheWindow(file)) {
-                filesToDelete.add(file);
-                continue;
-            }
-
         }
         deleteFiles(filesToDelete);
 
@@ -166,7 +153,7 @@ public class playState {
     }
 
     public void setCurrentChunk(int currentChunk) {
-        
+
         //TODO: need to update the current chunk in AudioBookDB
         System.out.println("This is the full book size " + fullBook.size());
         this.currentChunk = currentChunk;
