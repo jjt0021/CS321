@@ -1,11 +1,21 @@
 package com.mycompany.pdftest;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import com.mycompany.pdftest.Audio;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import com.mycompany.pdftest.Settings.TTSmodel;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /*
@@ -30,11 +40,19 @@ public class playState {
     private int reloadRange = 30;
     int cacheSize = 5;
     private TTSmodel initalModel;
-    private Map<Integer, Audio> cachedWindow = new HashMap<>();
+    private ConcurrentMap<Integer, Audio> cachedWindow = new ConcurrentHashMap<>();
+    // prefetch/cache fields
+    private BlockingQueue<Integer> prefetchQueue = new LinkedBlockingQueue<>();
+    private ExecutorService prefetchExecutor;
+    private Set<Integer> enqueued = ConcurrentHashMap.newKeySet();
+    private Path audioCacheDir = Paths.get("audio_cache");
+    private int prefetchAhead = 5;
+    private int keepBack = 10;
+    private int cleanupBuffer = 2;
 
     private final ArrayList<String> fullBook;
 
-    private String audioCachDirPath = "/cach";
+    // audio cache directory is `audioCacheDir` (Path)
     private String bookName;
     private String voice;
 
@@ -49,6 +67,52 @@ public class playState {
         this.bookName = bookName;
         this.initalModel = initalModel;
         this.voice = voice;
+
+        // Initialize audio cache directory and start a single-threaded prefetch worker
+        try {
+            Files.createDirectories(audioCacheDir);
+        } catch (IOException ex) {
+            System.err.println("Failed to create audio cache dir: " + ex.getMessage());
+        }
+
+        // Start of ChatGPT
+        prefetchExecutor = Executors.newSingleThreadExecutor();
+        prefetchExecutor.submit(() -> {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    int idx = prefetchQueue.take(); // blocks until work
+                    enqueued.remove(idx);
+
+                    // skip if already cached
+                    if (cachedWindow.containsKey(idx)) {
+                        continue;
+                    }
+
+                    // create Audio instance (uses existing Audio constructor)
+                    if (idx < 0 || idx >= fullBook.size()) {
+                        continue;
+                    }
+                    Audio audio = new Audio(fullBook.get(idx), voice, initalModel.URL, initalModel.name, idx, bookName);
+                    cachedWindow.put(idx, audio);
+
+                    // perform generation in background using the existing synchronous requestAudio()
+                    try {
+                        audio.requestAudio(); // requestAudio runs async internals in Audio but may block here
+                        // set expected file path in cache (mp3)
+                        Path generated = audioCacheDir.resolve(String.format("book_%s_chunk_%d.mp3", bookName, idx));
+                        audio.setFileURL(generated.toString());
+                    } catch (Exception e) {
+                        System.err.println("Audio generation failed for chunk " + idx + ": " + e.getMessage());
+                    }
+
+                    // run cleanup periodically
+                    prefetchAndCleanUP();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+        //END of ChatGPT
     }
 
     public boolean isIncorectExtention(File file) {
@@ -87,9 +151,13 @@ public class playState {
         }
         int chunkNum = Integer.parseInt(parts[1]);
 
-        // It would be really annoing to add this anyware else but better to remove
-        cachedWindow.remove(chunkNum);
-        return (chunkNum <= currentChunk - cacheSize || chunkNum >= currentChunk + cacheSize);
+        if (chunkNum <= currentChunk - cacheSize || chunkNum >= currentChunk + cacheSize) {
+            // It would be really annoing to add this anyware else
+            cachedWindow.remove(chunkNum);
+            return true;
+        } else {
+            return false;
+        }
 
     }
 
@@ -105,7 +173,9 @@ public class playState {
     }
 
     public void updateCachWindow() {
-        for (int i = currentChunk; i <= currentChunk + cacheSize; i++) {
+        int from = Math.max(0, currentChunk);
+        int to = Math.min(fullBook.size() - 1, currentChunk + cacheSize);
+        for (int i = from; i <= to; i++) {
             if (cachedWindow.containsKey(i)) {
                 continue;
             }
@@ -117,36 +187,22 @@ public class playState {
     }
 
     public void prefetchAndCleanUP() {
-        File directory = new File(audioCachDirPath);
-        File[] files = directory.listFiles();
-
-        //TODO add error message.
-        if (files == null) {
-            return;
-        }
-
+        // iterate files inside audio cache dir and delete out-of-window files
         ArrayList<File> filesToDelete = new ArrayList<>();
-
-        // Checks if the files need to be deleted
-        for (File file : files) {
-
-            if (isIncorectExtention(file)) {
-                filesToDelete.add(file);
-                continue;
+        try (DirectoryStream<Path> ds = Files.newDirectoryStream(audioCacheDir)) {
+            for (Path p : ds) {
+                File file = p.toFile();
+                if (isIncorectExtention(file) || isIncorrectBook(file) || isOutOfCacheWindow(file)) {
+                    filesToDelete.add(file);
+                }
             }
-
-            if (isIncorrectBook(file)) {
-                filesToDelete.add(file);
-                continue;
-            }
-
-            if (isOutOfCacheWindow(file)) {
-                filesToDelete.add(file);
-                continue;
-            }
-
+        } catch (IOException e) {
+            // directory may not exist or be empty
         }
-        deleteFiles(filesToDelete);
+
+        if (!filesToDelete.isEmpty()) {
+            deleteFiles(filesToDelete);
+        }
 
         updateCachWindow();
 
