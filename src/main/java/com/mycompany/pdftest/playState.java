@@ -26,12 +26,15 @@ import com.mycompany.pdftest.Settings.TTSmodel;
  *
  * @author elimo
  */
+
+
+//TODO need to add a the check for it it is fialed, generating or generated.
 //This classes job keeps track of the current chunk, checks if a reload is needed for the gui, and keeps track of if the playback is true
 public class playState {
 
     private int currentChunk;
 
-    private boolean isPlaying;
+    private boolean isPlaying = false;
 
     private int endChunk;
     private int startChunk;
@@ -68,6 +71,7 @@ public class playState {
         this.initalModel = initalModel;
         this.voice = voice;
 
+        // Start of ChatGPT
         // Initialize audio cache directory and start a single-threaded prefetch worker
         try {
             Files.createDirectories(audioCacheDir);
@@ -75,7 +79,6 @@ public class playState {
             System.err.println("Failed to create audio cache dir: " + ex.getMessage());
         }
 
-        // Start of ChatGPT
         prefetchExecutor = Executors.newSingleThreadExecutor();
         prefetchExecutor.submit(() -> {
             try {
@@ -262,7 +265,19 @@ public class playState {
     }
 
     public void setPlayState(boolean playState) {
+        if (isPlaying == playState) {
+            return;
+        }
+
         this.isPlaying = playState;
+
+        if (isPlaying) {
+            //TODO need to add pause and play things.
+            cachedWindow.get(currentChunk).resumeAudio();
+        } else {
+            cachedWindow.get(currentChunk).pauseAudio();
+
+        }
     }
 
     public boolean getPlayState() {

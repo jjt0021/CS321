@@ -59,13 +59,7 @@ public class Audio {
     }
 
     public boolean getIsGenerating() {
-        if (currentState == currentState.GENERATING) {
-            return true;
-        } else {
-
-            return false;
-        }
-
+        return (currentState == currentState.GENERATING);
     }
 
     public void requestAudio() {
@@ -110,8 +104,10 @@ public class Audio {
                 Files.write(outputPath, response.body());
                 currentState = AudioState.READY;
                 System.out.println("Saved speech to " + outputPath.toAbsolutePath());
+                
             } catch (IOException e) {
                 e.printStackTrace();
+                currentState = AudioState.FAILED;
             }
         }).join();
 
@@ -143,11 +139,13 @@ public class Audio {
 
     public void resumeAudio() {
         clip.setMicrosecondPosition(clipPosition);
+        currentState = AudioState.PLAYING;
         clip.start();
     }
 
     public void pauseAudio() {
         clipPosition = clip.getMicrosecondPosition();
+        currentState = AudioState.PAUSED;
         clip.stop();
 
     }
