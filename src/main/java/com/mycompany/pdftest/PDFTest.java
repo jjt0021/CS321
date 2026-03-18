@@ -15,6 +15,7 @@ import com.mycompany.pdftest.SettingsGui;
 import com.mycompany.pdftest.playState;
 import com.mycompany.pdftest.TextUtils;
 import com.mycompany.pdftest.Settings.SettingsValues;
+import com.mycompany.pdftest.Settings.TTSmodel;
 
 
 import java.io.File;
@@ -45,12 +46,12 @@ public class PDFTest {
         ArrayList<String> book = new ArrayList<>();
         book = TextUtils.splitText(TextUtils.getTextFromPdf(pdf));
 
-        // TempVar for testing
+        // 0 for testing
         //0 Is just for testing later it will be changed to get from the saved data.
         Settings settingsObj = new Settings();
         SettingsValues initalSettings = settingsObj.getSettingsValues();
         String bookName = pdf.getName();
-        playState test = new playState(0, book, initalSettings.loadedRange, initalSettings.reloadRange, bookName);
+        playState test = new playState(0, book, initalSettings.loadedRange, initalSettings.reloadRange, initalSettings.cacheSize, bookName, settingsObj.getModel(initalSettings.TtsModel), initalSettings.voice);
 
         JLayeredPane fileExplorer = new JLayeredPane();
         gui guiInstance = new gui(test, settingsObj);

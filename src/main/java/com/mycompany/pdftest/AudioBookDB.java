@@ -4,17 +4,18 @@
  */
 package com.mycompany.pdftest;
 
-import com.google.gson.Gson;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import com.google.gson.reflect.TypeToken;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 /**
  *
@@ -96,7 +97,7 @@ public class AudioBookDB {
 
     public void updateBookMarks(String filePath, int bookMarkID, String bookMarkText) {
         for (AudioBook book : audioBooks) {
-            if (book.filePath == filePath) {
+            if (book.filePath.equals(filePath)) {
                 book.bookMakredText.add(bookMarkText);
                 book.bookMarkID.add(bookMarkID);
                 save();

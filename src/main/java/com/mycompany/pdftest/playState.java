@@ -273,9 +273,31 @@ public class playState {
 
         if (isPlaying) {
             //TODO need to add pause and play things.
-            cachedWindow.get(currentChunk).resumeAudio();
+            Audio audio = cachedWindow.get(currentChunk);
+            if (audio == null) {
+                System.out.println("No cached audio for chunk " + currentChunk + ", requesting generation.");
+                // create and request audio in background
+                Audio newAudio = new Audio(fullBook.get(currentChunk), voice, initalModel.URL, initalModel.name, currentChunk, bookName);
+                cachedWindow.put(currentChunk, newAudio);
+                prefetchExecutor.submit(() -> {
+                    try {
+                        newAudio.requestAudio();
+                        // attempt to start playback when ready
+                        if (newAudio.getFileURL() != null) {
+                            newAudio.playAudio();
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Failed to generate/play audio for chunk " + currentChunk + ": " + e.getMessage());
+                    }
+                });
+            } else {
+                audio.resumeAudio();
+            }
         } else {
-            cachedWindow.get(currentChunk).pauseAudio();
+            Audio audio = cachedWindow.get(currentChunk);
+            if (audio != null) {
+                audio.pauseAudio();
+            }
 
         }
     }

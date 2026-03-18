@@ -12,6 +12,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -67,13 +68,6 @@ public class Audio {
         currentState = AudioState.GENERATING;
         HttpClient client = HttpClient.newHttpClient();
 
-        //These are just test values.
-        /*     
-        String model = "voxcpm";
-        String voice = "sheldon";
-        String input = "This is a test";
-        String url = "http://192.168.169.3:8999/v1/audio/speech";
-        **/
         String jsonBody = String.format("""
             {
               "model": "%s",
@@ -89,27 +83,25 @@ public class Audio {
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
-        CompletableFuture<HttpResponse<byte[]>> responseFuture
-                = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
+        try {
+            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
 
-        // This happens when the request is completed
-        responseFuture.thenAccept(response -> {
-            try {
-                if (response.statusCode() != 200) {
-                    System.err.println("HTTP error: " + response.statusCode());
-                    return;
-                }
-
-                Path outputPath = Path.of("book_%s_chunk_%s.mp3", bookName, String.valueOf(chunk));
-                Files.write(outputPath, response.body());
-                currentState = AudioState.READY;
-                System.out.println("Saved speech to " + outputPath.toAbsolutePath());
-                
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (response.statusCode() != 200) {
+                System.err.println("HTTP error: " + response.statusCode());
                 currentState = AudioState.FAILED;
+                return;
             }
-        }).join();
+
+            Path outputPath = Paths.get(String.format("book_%s_chunk_%d.mp3", bookName, chunk));
+            Files.write(outputPath, response.body());
+            setFileURL(outputPath.toString());
+            currentState = AudioState.READY;
+            System.out.println("Saved speech to " + outputPath.toAbsolutePath());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            currentState = AudioState.FAILED;
+        }
 
     }
 
@@ -121,12 +113,19 @@ public class Audio {
         return fileURL;
     }
 
-    public void playAuido() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
-        File audioFile = new File(fileURL);
+    public void playAudio() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+        if (fileURL == null) {
+            throw new IOException("No audio file set for playback");
+        }
 
-        AudioInputStream chunk = AudioSystem.getAudioInputStream(audioFile);
+        File audioFile = new File(fileURL);
+        if (!audioFile.exists()) {
+            throw new IOException("Audio file not found: " + fileURL);
+        }
+
+        AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
         clip = AudioSystem.getClip();
-        clip.open(chunk);
+        clip.open(audioStream);
 
         clip.addLineListener(event -> {
             if (event.getType() == LineEvent.Type.STOP) {
@@ -135,15 +134,33 @@ public class Audio {
             }
         });
 
-    }
-
-    public void resumeAudio() {
-        clip.setMicrosecondPosition(clipPosition);
+        clip.setMicrosecondPosition(0);
         currentState = AudioState.PLAYING;
         clip.start();
     }
 
+    public void resumeAudio() {
+        try {
+            if (clip == null) {
+                // try to load and play from file if available
+                playAudio();
+                return;
+            }
+
+            clip.setMicrosecondPosition(clipPosition);
+            currentState = AudioState.PLAYING;
+            clip.start();
+        } catch (Exception e) {
+            System.err.println("Failed to resume audio: " + e.getMessage());
+            currentState = AudioState.FAILED;
+        }
+    }
+
     public void pauseAudio() {
+        if (clip == null) {
+            return;
+        }
+
         clipPosition = clip.getMicrosecondPosition();
         currentState = AudioState.PAUSED;
         clip.stop();
