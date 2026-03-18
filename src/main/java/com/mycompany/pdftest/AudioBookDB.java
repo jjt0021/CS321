@@ -59,7 +59,7 @@ public class AudioBookDB {
                 audioBooks = gson.fromJson(reader, type);
 
                 // In case the file is empty - Can happen if all audioBOoks are deleted
-                if (audioBooks == null) {
+                if (audioBooks.equals(null)) {
                     audioBooks = new ArrayList<>();
                 }
             } catch (IOException e) {
@@ -118,7 +118,7 @@ public class AudioBookDB {
     public void removeAudioBook(String filePath) {
         AudioBook bookToRemove = null;
         for (AudioBook book : audioBooks) {
-            if (book.filePath == filePath) {
+            if (book.filePath.equals(filePath)) {
                 bookToRemove = book;
                 break;
             }
