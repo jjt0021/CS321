@@ -27,9 +27,9 @@ import com.mycompany.pdftest.Settings.SettingsValues;
  *
  * @author elimo
  */
-public class gui {
+public class BookUI {
 
-    private playState playState;
+    private PlayState playState;
     private Settings settingsObject;
     private SettingsValues loadedValues;
 
@@ -37,14 +37,14 @@ public class gui {
     private static JScrollPane scrollPane;
 
     // TODO: load models.
-    public gui(playState playState, Settings settingsObject) {
+    public BookUI(PlayState playState, Settings settingsObject) {
         this.playState = playState;
         this.settingsObject = settingsObject;
         this.loadedValues = settingsObject.getSettingsValues();
 
     }
 
-    public JScrollPane makeScrollPane(ArrayList<String> window, playState playState) {
+    public JScrollPane makeScrollPane(ArrayList<String> window, PlayState playState) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int width = (int) screenSize.getWidth();
 
@@ -102,7 +102,7 @@ public class gui {
         return scrollPane;
     }
 
-    public JLayeredPane makePane(JFrame frame, playState playstate) throws IOException {
+    public JLayeredPane makePane(JFrame frame, PlayState playstate) throws IOException {
 
         JScrollPane scrollPane = new JScrollPane(makeScrollPane(playstate.reloadChunks(), playstate));
 

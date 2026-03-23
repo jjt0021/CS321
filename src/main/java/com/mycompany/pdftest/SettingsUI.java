@@ -18,13 +18,13 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
 import com.mycompany.pdftest.Settings.SettingsValues;
-import com.mycompany.pdftest.Settings.TTSmodel;
+import com.mycompany.pdftest.Settings.TtsModel;
 
 /**
  *
  * @author elimo
  */
-public class SettingsGui {
+public class SettingsUI {
 
     private void addProgressBarBox(GridBagConstraints gbc, JPanel settingsPanel, SettingsValues initialSettings) {
     }
@@ -38,7 +38,7 @@ public class SettingsGui {
     static JScrollPane createSettingsGUI(Settings settings) {
 
         SettingsValues initialSettings = settings.getSettingsValues();
-        TTSmodel initaialModel = settings.getModel(initialSettings.TtsModel);
+        TtsModel initialModel = settings.getModel(initialSettings.TtsModel);
 
         JPanel settingsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -131,7 +131,7 @@ public class SettingsGui {
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         // Use real voice names from the selected model
-        String[] ttsNames = initaialModel.voices.toArray(new String[0]);
+        String[] ttsNames = initialModel.voices.toArray(new String[0]);
         JComboBox<String> voiceBox = new JComboBox<>(ttsNames);
 
         settingsPanel.add(voiceBox, gbc);
@@ -175,10 +175,10 @@ public class SettingsGui {
         }
 
         // Set the Inital Values
-        TTSURL.setText(initaialModel.URL);
-        voices.setText(String.join(", ", initaialModel.voices));
-        modelName.setText(initaialModel.name);
-        apiKey.setText(initaialModel.apiKey);
+        TTSURL.setText(initialModel.URL);
+        voices.setText(String.join(", ", initialModel.voices));
+        modelName.setText(initialModel.name);
+        apiKey.setText(initialModel.apiKey);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -195,7 +195,7 @@ public class SettingsGui {
                 -> {
             String modelSelectedString = (String) modelSelector.getSelectedItem();
 
-            Settings.TTSmodel modelSelectedObject = settings.getModel(modelSelectedString);
+            Settings.TtsModel modelSelectedObject = settings.getModel(modelSelectedString);
             TTSURL.setText(modelSelectedObject.URL);
             apiKey.setText(modelSelectedObject.apiKey);
             voices.setText(String.join(", ", modelSelectedObject.voices));
@@ -317,7 +317,7 @@ public class SettingsGui {
             // The end user can not name a model new. This is to prevent that
             // This only matter if JComboBox is New
             if (ttsModelSelected.equals("New")) {
-                if (settings.modelNameList().contains(initaialModel.name)) {
+                if (settings.modelNameList().contains(initialModel.name)) {
 
                     // TODO: give the user an error.
                     //Cut out of the saving
@@ -325,7 +325,7 @@ public class SettingsGui {
                 }
             }
 
-            Settings.TTSmodel newModel = settings.new TTSmodel();
+            Settings.TtsModel newModel = settings.new TtsModel();
             newModel.URL = ttsAddr;
             newModel.apiKey = apiKeyValue;
             newModel.name = TTSModelName;

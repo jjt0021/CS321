@@ -35,14 +35,14 @@ public class Settings {
 
     public Settings() {
         load();
-        if (settings.TTSmodelList.size() == 0) {
-            //TTSmodel temp = 
-            settings.TTSmodelList.add(new TTSmodel());
+        if (settings.ttsModelList.size() == 0) {
+            //TtsModel temp = 
+            settings.ttsModelList.add(new TtsModel());
             System.out.println("New TTSModel added");
-            System.out.print(settings.TTSmodelList);
+            System.out.print(settings.ttsModelList);
         }
         System.out.println("Model found");
-        System.out.println(settings.TTSmodelList);
+        System.out.println(settings.ttsModelList);
 
     }
 
@@ -54,7 +54,7 @@ public class Settings {
         this.settings = settings;
     }
 
-    public class TTSmodel {
+    public class TtsModel {
 
         public String URL = "https://api.openai.com/v1/audio/speech";
         public java.util.List<String> voices = new ArrayList<>();
@@ -70,13 +70,13 @@ public class Settings {
         public int reloadRange = 30;
         public int loadedRange = 100;
         public int cacheSize = 8;
-        public List<TTSmodel> TTSmodelList = new ArrayList<>();
+        public List<TtsModel> ttsModelList = new ArrayList<>();
 
     }
 
     public List<String> modelNameList() {
         List<String> modelNameList = new ArrayList<>();
-        for (TTSmodel model : settings.TTSmodelList) {
+        for (TtsModel model : settings.ttsModelList) {
             modelNameList.add(model.name);
             System.out.println("Name added");
             System.out.println("This is ithe model added" + model.name);
@@ -87,24 +87,24 @@ public class Settings {
         return modelNameList;
     }
 
-    public TTSmodel getModel(String modelName) {
-        for (TTSmodel model : settings.TTSmodelList) {
+    public TtsModel getModel(String modelName) {
+        for (TtsModel model : settings.ttsModelList) {
             if (model.name.equals(modelName)) {
                 return model;
 
             }
 
         }
-        return new TTSmodel();
+        return new TtsModel();
     }
 
-    public void updateModelList(TTSmodel inputModel) {
+    public void updateModelList(TtsModel inputModel) {
         List<String> modelNamesList = modelNameList();
         if (modelNamesList.contains(inputModel.name)) {
-            TTSmodel modelToRemove = null;
+            TtsModel modelToRemove = null;
             // Remove  The same model if it exist. If it is the same model we just add it back after, so it does not matter.
             // WE CAN NOT REMOVE A MODEL WHILE LOOPING OVER EVERY ITEM IN A LIST
-            for (TTSmodel model : settings.TTSmodelList) {
+            for (TtsModel model : settings.ttsModelList) {
                 if (model.name.equals(inputModel.name)) {
                     modelToRemove = model;
                     System.out.println("This is the model that is being removed - " + inputModel.name);
@@ -113,25 +113,25 @@ public class Settings {
             }
 
             if (modelToRemove != null) {
-                settings.TTSmodelList.remove(modelToRemove);
+                settings.ttsModelList.remove(modelToRemove);
             }
         }
 
         System.out.println("A NEW MODEL IS BEING ADDED");
         System.out.println(inputModel);
 
-        settings.TTSmodelList.add(inputModel);
+        settings.ttsModelList.add(inputModel);
 
     }
 
-    public TTSmodel loadModel(String modelName) {
+    public TtsModel loadModel(String modelName) {
         // Finds if the model is in the list and if not it makes a new one
-        for (TTSmodel ttsModel : settings.TTSmodelList) {
+        for (TtsModel ttsModel : settings.ttsModelList) {
             if (modelName.equals(ttsModel.name)) {
                 return ttsModel;
             }
         }
-        return new TTSmodel();
+        return new TtsModel();
     }
 
     // This needs save gaurds, so the user can not input bad values.

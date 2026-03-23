@@ -9,21 +9,19 @@
  * */
 package com.mycompany.pdftest;
 
-import com.mycompany.pdftest.Audio;
-import com.mycompany.pdftest.gui;
-import com.mycompany.pdftest.SettingsGui;
-import com.mycompany.pdftest.playState;
-import com.mycompany.pdftest.TextUtils;
-import com.mycompany.pdftest.Settings.SettingsValues;
-import com.mycompany.pdftest.Settings.TTSmodel;
-
-
+import java.awt.CardLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
+import com.mycompany.pdftest.Settings.SettingsValues;
 
 /**
  *
@@ -48,16 +46,16 @@ public class PDFTest {
 
         // 0 for testing
         //0 Is just for testing later it will be changed to get from the saved data.
-        Settings settingsObj = new Settings();
-        SettingsValues initalSettings = settingsObj.getSettingsValues();
+        Settings settingsManager = new Settings();
+        SettingsValues initialSettings = settingsManager.getSettingsValues();
         String bookName = pdf.getName();
-        playState test = new playState(0, book, initalSettings.loadedRange, initalSettings.reloadRange, initalSettings.cacheSize, bookName, settingsObj.getModel(initalSettings.TtsModel), initalSettings.voice);
+        PlayState playStateManager = new PlayState(0, book, initialSettings.loadedRange, initialSettings.reloadRange, initialSettings.cacheSize, bookName, settingsManager.getModel(initialSettings.TtsModel), initialSettings.voice);
 
         JLayeredPane fileExplorer = new JLayeredPane();
-        gui guiInstance = new gui(test, settingsObj);
-        JLayeredPane audioBook = guiInstance.makePane(frame, test);
+        BookUI bookUIManager = new BookUI(playStateManager, settingsManager);
+        JLayeredPane audioBook = bookUIManager.makePane(frame, playStateManager);
 
-        JScrollPane settings = SettingsGui.createSettingsGUI(settingsObj);
+        JScrollPane settings = SettingsUI.createSettingsGUI(settingsManager);
         CardLayout cardLayout = new CardLayout();
         JPanel screens = new JPanel(cardLayout);
 
