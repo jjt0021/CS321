@@ -49,9 +49,6 @@ public class playState {
     private ExecutorService prefetchExecutor;
     private Set<Integer> enqueued = ConcurrentHashMap.newKeySet();
     private Path audioCacheDir = Paths.get("audio_cache");
-    private int prefetchAhead = 5;
-    private int keepBack = 10;
-    private int cleanupBuffer = 2;
 
     private final ArrayList<String> fullBook;
 

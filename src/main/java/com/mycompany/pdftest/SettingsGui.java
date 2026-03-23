@@ -1,15 +1,11 @@
 package com.mycompany.pdftest;
 
-import com.mycompany.pdftest.Settings;
-import com.mycompany.pdftest.Settings.SettingsValues;
-import com.mycompany.pdftest.Settings.TTSmodel;
-
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.Arrays;
 import java.util.List;
+
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -21,15 +17,29 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
+import com.mycompany.pdftest.Settings.SettingsValues;
+import com.mycompany.pdftest.Settings.TTSmodel;
+
 /**
  *
  * @author elimo
  */
 public class SettingsGui {
 
+    private void addProgressBarBox(GridBagConstraints gbc, JPanel settingsPanel, SettingsValues initialSettings) {
+    }
+
+    private void addChunkLoaderRange(GridBagConstraints gbc, JPanel settingsPanel, SettingsValues initialSettings) {
+    }
+
+    private void addChunkReloadRang(GridBagConstraints gbc, JPanel settingsPanel, SettingsValues initialSettings) {
+    }
+
     static JScrollPane createSettingsGUI(Settings settings) {
 
         SettingsValues initialSettings = settings.getSettingsValues();
+        TTSmodel initaialModel = settings.getModel(initialSettings.TtsModel);
+
         JPanel settingsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -120,10 +130,9 @@ public class SettingsGui {
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        //TODO: need to use real voice form settings.
-        JComboBox<String> voiceBox = new JComboBox<>(
-                new String[]{"alloy", "echo", "sage"}
-        );
+        // Use real voice names from the selected model
+        String[] ttsNames = initaialModel.voices.toArray(new String[0]);
+        JComboBox<String> voiceBox = new JComboBox<>(ttsNames);
 
         settingsPanel.add(voiceBox, gbc);
 
@@ -166,7 +175,6 @@ public class SettingsGui {
         }
 
         // Set the Inital Values
-        TTSmodel initaialModel = settings.getModel(initialSettings.TtsModel);
         TTSURL.setText(initaialModel.URL);
         voices.setText(String.join(", ", initaialModel.voices));
         modelName.setText(initaialModel.name);
@@ -188,11 +196,15 @@ public class SettingsGui {
             String modelSelectedString = (String) modelSelector.getSelectedItem();
 
             Settings.TTSmodel modelSelectedObject = settings.getModel(modelSelectedString);
-            //TODO: I need to acually implemenmt this with the settings
             TTSURL.setText(modelSelectedObject.URL);
             apiKey.setText(modelSelectedObject.apiKey);
             voices.setText(String.join(", ", modelSelectedObject.voices));
             modelName.setText(modelSelectedString);
+                        // Update the voice combo box to reflect the newly selected model's voices
+                        voiceBox.setModel(new javax.swing.DefaultComboBoxModel<>(modelSelectedObject.voices.toArray(new String[0])));
+                        if (!modelSelectedObject.voices.isEmpty()) {
+                                voiceBox.setSelectedIndex(0);
+                        }
 
         }
         );
