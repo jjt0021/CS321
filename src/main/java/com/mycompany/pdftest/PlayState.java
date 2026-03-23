@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.mycompany.pdftest.Settings.TTSmodel;
+import com.mycompany.pdftest.Settings.TtsModel;
 
 
 /*
@@ -30,7 +30,7 @@ import com.mycompany.pdftest.Settings.TTSmodel;
 
 //TODO need to add a the check for it it is fialed, generating or generated.
 //This classes job keeps track of the current chunk, checks if a reload is needed for the gui, and keeps track of if the playback is true
-public class playState {
+public class PlayState {
 
     private int currentChunk;
 
@@ -42,7 +42,7 @@ public class playState {
     private int loadedRange = 100;
     private int reloadRange = 30;
     int cacheSize = 5;
-    private TTSmodel initalModel;
+    private TtsModel initialModel;
     private ConcurrentMap<Integer, Audio> cachedWindow = new ConcurrentHashMap<>();
     // prefetch/cache fields
     private BlockingQueue<Integer> prefetchQueue = new LinkedBlockingQueue<>();
@@ -56,7 +56,7 @@ public class playState {
     private String bookName;
     private String voice;
 
-    public playState(int currentChunk, ArrayList<String> fullBook, int loadedRange, int reloadRange, int cacheSize, String bookName, TTSmodel initalModel, String voice) {
+    public PlayState(int currentChunk, ArrayList<String> fullBook, int loadedRange, int reloadRange, int cacheSize, String bookName, TtsModel initialModel, String voice) {
         this.loadedRange = loadedRange;
         this.reloadRange = reloadRange;
         this.currentChunk = currentChunk;
@@ -65,7 +65,7 @@ public class playState {
         startChunk = Math.max(0, (currentChunk - loadedRange));
         endChunk = Math.min(fullBook.size() - 1, (currentChunk + loadedRange));
         this.bookName = bookName;
-        this.initalModel = initalModel;
+        this.initialModel = initialModel;
         this.voice = voice;
 
         // Start of ChatGPT
@@ -92,7 +92,7 @@ public class playState {
                     if (idx < 0 || idx >= fullBook.size()) {
                         continue;
                     }
-                    Audio audio = new Audio(fullBook.get(idx), voice, initalModel.URL, initalModel.name, idx, bookName);
+                    Audio audio = new Audio(fullBook.get(idx), voice, initialModel.URL, initialModel.name, idx, bookName);
                     cachedWindow.put(idx, audio);
 
                     // perform generation in background using the existing synchronous requestAudio()
@@ -181,7 +181,7 @@ public class playState {
             }
 
             int chunkInt = i;
-            cachedWindow.put(i, new Audio(fullBook.get(chunkInt), voice, initalModel.URL, initalModel.name, chunkInt, bookName));
+            cachedWindow.put(i, new Audio(fullBook.get(chunkInt), voice, initialModel.URL, initialModel.name, chunkInt, bookName));
         }
 
     }
@@ -274,7 +274,7 @@ public class playState {
             if (audio == null) {
                 System.out.println("No cached audio for chunk " + currentChunk + ", requesting generation.");
                 // create and request audio in background
-                Audio newAudio = new Audio(fullBook.get(currentChunk), voice, initalModel.URL, initalModel.name, currentChunk, bookName);
+                Audio newAudio = new Audio(fullBook.get(currentChunk), voice, initialModel.URL, initialModel.name, currentChunk, bookName);
                 cachedWindow.put(currentChunk, newAudio);
                 prefetchExecutor.submit(() -> {
                     try {
