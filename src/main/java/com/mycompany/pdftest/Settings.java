@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 
 /**
  *
@@ -70,6 +71,7 @@ public class Settings {
         public int reloadRange = 30;
         public int loadedRange = 100;
         public int cacheSize = 8;
+        @SerializedName("TTSmodelList")
         public List<TtsModel> ttsModelList = new ArrayList<>();
 
     }
@@ -166,6 +168,11 @@ public class Settings {
             }
         } else {
             settings = new SettingsValues();
+        }
+        
+        // Ensure ttsModelList is initialized (handles JSON deserialization mismatches)
+        if (settings.ttsModelList == null) {
+            settings.ttsModelList = new ArrayList<>();
         }
     }
 
