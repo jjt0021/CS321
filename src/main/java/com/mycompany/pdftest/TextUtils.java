@@ -25,7 +25,7 @@ public class TextUtils {
             PDFTextStripper stripper = new PDFTextStripper();
             return stripper.getText(document);
         }
-    }//Tell-Tale_Heart.pdf
+    }//Tell-Tale_Heart.pdf just use this for testing.
 
     public static ArrayList<String> splitText(String inputText) {
 
@@ -40,6 +40,7 @@ public class TextUtils {
 
         while (chunkPos < chunks.length) {
 
+            //Combines it if it is too short.
             while (combinedText.length() + chunks[chunkPos].length() < chunkLength) {
                 combinedText += chunks[chunkPos];
                 chunkPos++;

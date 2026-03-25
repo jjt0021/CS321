@@ -74,6 +74,7 @@ public class PDFTest {
         /*
        ************ IMPORTANT - AUTO SCROLL CODE ******************* 
 
+        // IT would be nice to implement this, but might be way to difficult.
         // Auto Scroll Test
         JViewport viewport = scrollPane.getViewport();
         Point p = viewport.getViewPosition();

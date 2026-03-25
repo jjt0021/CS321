@@ -130,7 +130,7 @@ public class BookUI {
 
         // Resizes components
         // We could remove this becuase the fetuare is kind of useless and jsut add extra complexety.
-        // Also without it we would not need to pass frame to the 
+        // Also without it we would not need to pass the frame 
         // chatgpt - with eddits
         frame.addComponentListener(new ComponentAdapter() {
             @Override
@@ -149,6 +149,7 @@ public class BookUI {
 
             }
         });
+        // END of GPT
 
         return layerWindow;
 
