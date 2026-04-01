@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 /**
@@ -59,11 +60,16 @@ public class AudioBookDB {
                 audioBooks = gson.fromJson(reader, type);
 
                 // In case the file is empty - Can happen if all audioBOoks are deleted
-                if (audioBooks.equals(null)) {
+                if (audioBooks == null) {
                     audioBooks = new ArrayList<>();
                 }
             } catch (IOException e) {
-                throw new RuntimeException("Failed to load audiobooks", e);
+                System.err.println("Failed to read AudioBookDB file: " + e.getMessage());
+                audioBooks = new ArrayList<>();
+            } catch (JsonSyntaxException e) {
+                System.err.println("AudioBookDB file is corrupted or has invalid format: " + e.getMessage());
+                System.err.println("Initializing with empty audiobook list. Please check the file format or delete it to reset.");
+                audioBooks = new ArrayList<>();
             }
         } else {
             audioBooks = new ArrayList<>();

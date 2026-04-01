@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -164,7 +165,12 @@ public class Settings {
                     settings = new SettingsValues();
                 }
             } catch (IOException e) {
-                throw new RuntimeException("Failed to load Settings", e);
+                System.err.println("Failed to read Settings file: " + e.getMessage());
+                settings = new SettingsValues();
+            } catch (JsonSyntaxException e) {
+                System.err.println("Settings file is corrupted or has invalid format: " + e.getMessage());
+                System.err.println("Initializing with default settings. Please check the file format or delete it to reset.");
+                settings = new SettingsValues();
             }
         } else {
             settings = new SettingsValues();

@@ -11,6 +11,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -20,7 +21,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
-import com.mycompany.pdftest.Settings;
 import com.mycompany.pdftest.Settings.SettingsValues;
 
 /**
@@ -32,6 +32,7 @@ public class BookUI {
     private PlayState playState;
     private Settings settingsObject;
     private SettingsValues loadedValues;
+    private AppController controller;
 
     private static JPanel panel;
     private static JScrollPane scrollPane;
@@ -41,7 +42,16 @@ public class BookUI {
         this.playState = playState;
         this.settingsObject = settingsObject;
         this.loadedValues = settingsObject.getSettingsValues();
+        this.controller = null;
 
+    }
+    
+    /**
+     * Sets the controller reference for MVC communication
+     * @param controller the AppController instance
+     */
+    public void setController(AppController controller) {
+        this.controller = controller;
     }
 
     public JScrollPane makeScrollPane(ArrayList<String> window, PlayState playState) {
@@ -76,11 +86,18 @@ public class BookUI {
 
             button.addActionListener(e -> {
                 int chunkNum = (int) ((JButton) e.getSource()).getClientProperty("chunkNum");
-                playState.setCurrentChunk(chunkNum);
-                System.out.println("Current chunk updated: " + chunkNum);
+                
+                // Use controller to handle chunk selection (MVC pattern)
+                if (controller != null) {
+                    controller.onChunkSelected(chunkNum);
+                } else {
+                    // Fallback for backward compatibility
+                    playState.setCurrentChunk(chunkNum);
+                    System.out.println("Current chunk updated: " + chunkNum);
 
-                if (playState.reloadCheck()) {
-                    makeScrollPane(playState.reloadChunks(), playState);
+                    if (playState.reloadCheck()) {
+                        makeScrollPane(playState.reloadChunks(), playState);
+                    }
                 }
             });
 
@@ -102,15 +119,63 @@ public class BookUI {
         return scrollPane;
     }
 
-    public JLayeredPane makePane(JFrame frame, PlayState playstate) throws IOException {
+    /**
+     * Update the scroll pane with new content (called by Controller)
+     * This separates view updates from direct model access
+     * @param window the new text chunks to display
+     */
+    public void updateScrollPane(ArrayList<String> window) {
+        makeScrollPane(window, playState);
+    }
+
+    public JLayeredPane makePane(JFrame frame, PlayState playstate, AppController controller) throws IOException {
+        // Set controller reference for MVC communication
+        setController(controller);
 
         JScrollPane scrollPane = new JScrollPane(makeScrollPane(playstate.reloadChunks(), playstate));
 
+        // ========== Top Navigation Buttons ==========
+        JButton closeButton = new JButton("X");
+        closeButton.setFocusPainted(true);
+        closeButton.setContentAreaFilled(true);
+        closeButton.setBackground(Color.LIGHT_GRAY);
+        closeButton.setForeground(Color.BLACK);
+        closeButton.setFont(closeButton.getFont().deriveFont(14f));
+        closeButton.setToolTipText("Back to File Manager");
+        
+        closeButton.addActionListener(e -> {
+            if (controller != null) {
+                controller.showFileManagerView();
+            }
+        });
+
+        JButton settingsButton = new JButton("⚙ Settings");
+        settingsButton.setFocusPainted(true);
+        settingsButton.setContentAreaFilled(true);
+        settingsButton.setBackground(Color.LIGHT_GRAY);
+        settingsButton.setForeground(Color.BLACK);
+        settingsButton.setToolTipText("Open Settings");
+        
+        settingsButton.addActionListener(e -> {
+            if (controller != null) {
+                controller.showSettingsView();
+            }
+        });
+
+        // ============== Bottom navigation Buttons =================
         // This section is for all of the action buttons like play pause etc.
         JButton play = new JButton("PLAY");
         play.setFocusPainted(true);// highlights what you click on
         play.setContentAreaFilled(true); // IMPORTANT- Can change the button color, important of highlighting
         play.setBackground(Color.red);
+        
+        // Add play button action listener using controller
+        play.addActionListener(e -> {
+            if (controller != null) {
+                boolean currentPlayState = playstate.getPlayState();
+                controller.onPlayStateChanged(!currentPlayState);
+            }
+        });
 
         JButton prevChunk = new JButton("PLAY");
         play.setFocusPainted(true);// highlights what you click on
@@ -124,6 +189,8 @@ public class BookUI {
 
         JLayeredPane layerWindow = new JLayeredPane();
         layerWindow.add(scrollPane, JLayeredPane.DEFAULT_LAYER);
+        layerWindow.add(closeButton, PALETTE_LAYER);
+        layerWindow.add(settingsButton, PALETTE_LAYER);
         layerWindow.add(play, PALETTE_LAYER);
         layerWindow.add(skipChunk, PALETTE_LAYER);
         layerWindow.add(prevChunk, PALETTE_LAYER);
@@ -141,6 +208,18 @@ public class BookUI {
                 layerWindow.setBounds(0, 0, w, h);
                 scrollPane.setBounds(0, 0, w, h);
 
+                // Top button dimensions
+                int topBtnWidth = (int) (w * 0.08);
+                int topBtnHeight = (int) (h * 0.05);
+                int topPadding = 10;
+                
+                // Position close button at top-left
+                closeButton.setBounds(topPadding, topPadding, topBtnWidth, topBtnHeight);
+                
+                // Position settings button at top-right
+                settingsButton.setBounds(w - topBtnWidth - topPadding, topPadding, topBtnWidth + 20, topBtnHeight);
+
+                // Bottom button dimensions
                 int btnWidth = (int) (w * 0.1);
                 int btnHeight = (int) (w * 0.1);
                 play.setBounds((int) ((w - btnWidth) * .5), h - btnHeight, btnWidth, btnHeight);

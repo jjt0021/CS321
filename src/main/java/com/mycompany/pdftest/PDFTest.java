@@ -1,27 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- */
-/** *****************IMPORTANT*******************
- *
- * iT IS BEST TO HAVE AUDIO BASED ON CURRENT CHUNK RATHER THAN THE BUTTON.
- * IT SHOULD BE IN PLAYSTATE
- *
- * */
 package com.mycompany.pdftest;
 
-import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javax.swing.JFrame;
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
-import com.mycompany.pdftest.Settings.SettingsValues;
 
 /**
  *
@@ -40,61 +23,43 @@ public class PDFTest {
         frame.setSize(width, height);
 
         String pdfPath = "src/main/java/com/mycompany/pdftest/Challenges and Strategies for African American Women in Higher Ed _ Free Essay Example.pdf";
-        File pdf = new File(pdfPath);
-        ArrayList<String> book = new ArrayList<>();
-        book = TextUtils.splitText(TextUtils.getTextFromPdf(pdf));
-
-        // 0 for testing
-        //0 Is just for testing later it will be changed to get from the saved data.
-        Settings settingsManager = new Settings();
-        SettingsValues initialSettings = settingsManager.getSettingsValues();
-        String bookName = pdf.getName();
-        PlayState playStateManager = new PlayState(0, book, initialSettings.loadedRange, initialSettings.reloadRange, initialSettings.cacheSize, bookName, settingsManager.getModel(initialSettings.TtsModel), initialSettings.voice);
-
-        JLayeredPane fileExplorer = new JLayeredPane();
-        BookUI bookUIManager = new BookUI(playStateManager, settingsManager);
-        JLayeredPane audioBook = bookUIManager.makePane(frame, playStateManager);
-
-        JScrollPane settings = SettingsUI.createSettingsGUI(settingsManager);
-        CardLayout cardLayout = new CardLayout();
-        JPanel screens = new JPanel(cardLayout);
-
-        // The Fist add is shown first, so we should add the FIle explorer first.
-        //screens.add(fileExplorer, "File Explorer");
-        screens.add(settings, "Settings");
-        screens.add(audioBook, "audioBook");
-        // We will need to add listeners to every menue
-        // The code will look something like this         
-        // startButton.addActionListener(e -> cardLayout.show(cards, "Settings"));
-
-        frame.setContentPane(screens);
-
+        
+        // ========== MVC Architecture ==========
+        // Initialize the controller (main coordinator between Model and View)
+        AppController appController = new AppController(frame);
+        
+        // Initialize models with data
+        appController.initializeModels(pdfPath);
+        
+        // Initialize views
+        appController.initializeViews();
+        
+        // Show the application
         frame.setVisible(true);
-
-        /*
-       ************ IMPORTANT - AUTO SCROLL CODE ******************* 
-
-        // IT would be nice to implement this, but might be way to difficult.
-        // Auto Scroll Test
-        JViewport viewport = scrollPane.getViewport();
-        Point p = viewport.getViewPosition();
-
-        p.y += 100;   // move down 50 pixels
-        viewport.setViewPosition(p);
-        
-        
-        **/
     }
 
 }
 
 /*
-Implementaion Notes
+Implementation Notes
 
 We should update the current chunk with highlighting
 The current chunk will be updated in the highlighted chunk function
 We should create the adio objects when we make the 
 
 The file explorer should handle checking if the pdf file is good.
+
+MVC Architecture Overview:
+- AppController: Coordinates all interactions between Models and Views
+- Models: PlayState, Settings, AudioBookDB, Audio (manage application data)
+- Views: BookUI, SettingsUI (display data and handle user input)
+- Events: Views communicate with Controller, Controller updates Models and notifies Views
+
+Auto Scroll Implementation (Future):
+It would be nice to implement this, but might be way too difficult.
+// JViewport viewport = scrollPane.getViewport();
+// Point p = viewport.getViewPosition();
+// p.y += 100;   // move down 50 pixels
+// viewport.setViewPosition(p);
 
 **/

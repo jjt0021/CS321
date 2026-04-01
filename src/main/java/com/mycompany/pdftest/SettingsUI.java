@@ -35,7 +35,7 @@ public class SettingsUI {
     private void addChunkReloadRang(GridBagConstraints gbc, JPanel settingsPanel, SettingsValues initialSettings) {
     }
 
-    static JScrollPane createSettingsGUI(Settings settings) {
+    static JScrollPane createSettingsGUI(Settings settings, AppController controller) {
 
         SettingsValues initialSettings = settings.getSettingsValues();
         TtsModel initialModel = settings.getModel(initialSettings.TtsModel);
@@ -325,33 +325,51 @@ public class SettingsUI {
                 }
             }
 
-            Settings.TtsModel newModel = settings.new TtsModel();
-            newModel.URL = ttsAddr;
-            newModel.apiKey = apiKeyValue;
-            newModel.name = TTSModelName;
-            newModel.voices = voicesList;
-            settings.updateModelList(newModel);
+            // Use controller to handle settings save (MVC pattern)
+            if (controller != null) {
+                controller.onSettingsSaved(
+                    progressBarEnabled,
+                    chunkLoadedRange,
+                    chunkReloadedRange,
+                    cacheSizeInt,
+                    voiceSelected,
+                    ttsAddr,
+                    voicesList,
+                    TTSModelName,
+                    apiKeyValue
+                );
+                // Navigate back to audiobook view after saving
+                controller.showAudioBookView();
+            } else {
+                // Fallback for backward compatibility
+                Settings.TtsModel newModel = settings.new TtsModel();
+                newModel.URL = ttsAddr;
+                newModel.apiKey = apiKeyValue;
+                newModel.name = TTSModelName;
+                newModel.voices = voicesList;
+                settings.updateModelList(newModel);
 
-            // Here you can save the data as needed (e.g., save to a file, database, etc.)
-            System.out.println("Progress Bar Enabled: " + progressBarEnabled);
-            initialSettings.showProgressBar = progressBarEnabled;
+                // Here you can save the data as needed (e.g., save to a file, database, etc.)
+                System.out.println("Progress Bar Enabled: " + progressBarEnabled);
+                initialSettings.showProgressBar = progressBarEnabled;
 
-            System.out.println("Chunk Loaded Range: " + chunkLoadedRange);
-            initialSettings.loadedRange = chunkLoadedRange;
+                System.out.println("Chunk Loaded Range: " + chunkLoadedRange);
+                initialSettings.loadedRange = chunkLoadedRange;
 
-            System.out.println("Chunk Reloaded Range: " + chunkReloadedRange);
-            initialSettings.reloadRange = chunkReloadedRange;
+                System.out.println("Chunk Reloaded Range: " + chunkReloadedRange);
+                initialSettings.reloadRange = chunkReloadedRange;
 
-            System.out.println("cacheSize: " + cacheSizeInt);
-            initialSettings.cacheSize = cacheSizeInt;
+                System.out.println("cacheSize: " + cacheSizeInt);
+                initialSettings.cacheSize = cacheSizeInt;
 
-            // All of these requer more work because of the model list.
-            System.out.println("TTS Name: " + voiceSelected);
-            //System.out.println("TTS Model: " + ttsModel);
+                // All of these requer more work because of the model list.
+                System.out.println("TTS Name: " + voiceSelected);
+                //System.out.println("TTS Model: " + ttsModel);
 
-            initialSettings.TtsModel = TTSModelName;
+                initialSettings.TtsModel = TTSModelName;
 
-            settings.save();
+                settings.save();
+            }
         }
         );
 
