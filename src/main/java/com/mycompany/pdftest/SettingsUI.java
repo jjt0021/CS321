@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -25,6 +26,66 @@ import com.mycompany.pdftest.Settings.TtsModel;
  * @author elimo
  */
 public class SettingsUI {
+
+
+        // ==================== Safty Checks =======================
+    private static boolean validateSettings(String ttsAddr, String modelName, String apiKey, String voicesString) {
+        // Check if TTS URL is empty
+        if (ttsAddr == null || ttsAddr.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(null, 
+                "TTS API Address cannot be empty.", 
+                "Validation Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        
+        // Check if TTS URL is valid (contains http:// or https://)
+        if (!ttsAddr.startsWith("http://") && !ttsAddr.startsWith("https://")) {
+            JOptionPane.showMessageDialog(null, 
+                "TTS API Address must start with 'http://' or 'https://'.", 
+                "Validation Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        
+        // Check if Model name is empty
+        if (modelName == null || modelName.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(null, 
+                "Model Name cannot be empty.", 
+                "Validation Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        
+        // Check if Model name is "New" (reserved)
+        if (modelName.trim().equals("New")) {
+            JOptionPane.showMessageDialog(null, 
+                "Model Name cannot be 'New' as it is reserved.", 
+                "Validation Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        
+        // Check if API key is empty
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(null, 
+                "API Key cannot be empty.", 
+                "Validation Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        
+        // Check if voices list is empty
+        if (voicesString == null || voicesString.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(null, 
+                "Voices list cannot be empty. Please provide at least one voice (comma-separated).", 
+                "Validation Error", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        
+        return true;
+    }
 
     private void addProgressBarBox(GridBagConstraints gbc, JPanel settingsPanel, SettingsValues initialSettings) {
     }
@@ -307,6 +368,13 @@ public class SettingsUI {
             String voicesString = voices.getText();
             String TTSModelName = modelName.getText();
             String apiKeyValue = apiKey.getText();
+
+            // ========== SAFETY VALIDATION ==========
+            // Validate all text field inputs before saving
+            if (!validateSettings(ttsAddr, TTSModelName, apiKeyValue, voicesString)) {
+                System.out.println("Settings validation failed. Save cancelled.");
+                return; // Stop save operation if validation fails
+            }
 
             List<String> voicesList = Arrays.asList(voicesString.split(","));
             for (String voice : voicesList) {
