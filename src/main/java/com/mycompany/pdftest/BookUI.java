@@ -34,8 +34,9 @@ public class BookUI {
     private SettingsValues loadedValues;
     private AppController controller;
 
-    private static JPanel panel;
-    private static JScrollPane scrollPane;
+    //need to make it not staic so each book gets a fresh UI
+    private JPanel panel;
+    private JScrollPane scrollPane;
 
     // TODO: load models.
     public BookUI(PlayState playState, Settings settingsObject) {
@@ -128,11 +129,15 @@ public class BookUI {
         makeScrollPane(window, playState);
     }
 
+  
+
     public JLayeredPane makePane(JFrame frame, PlayState playstate, AppController controller) throws IOException {
         // Set controller reference for MVC communication
         setController(controller);
 
-        JScrollPane scrollPane = new JScrollPane(makeScrollPane(playstate.reloadChunks(), playstate));
+        // Call the method directly without wrapping it in a new JScrollPane
+        JScrollPane localScrollPane = makeScrollPane(playstate.reloadChunks(), playstate);
+
 
         // ========== Top Navigation Buttons ==========
         JButton closeButton = new JButton("X");
@@ -165,8 +170,8 @@ public class BookUI {
         // ============== Bottom navigation Buttons =================
         // This section is for all of the action buttons like play pause etc.
         JButton play = new JButton("PLAY");
-        play.setFocusPainted(true);// highlights what you click on
-        play.setContentAreaFilled(true); // IMPORTANT- Can change the button color, important of highlighting
+        play.setFocusPainted(true);
+        play.setContentAreaFilled(true); 
         play.setBackground(Color.red);
         
         // Add play button action listener using controller
@@ -177,61 +182,70 @@ public class BookUI {
             }
         });
 
-        JButton prevChunk = new JButton("PLAY");
-        play.setFocusPainted(true);// highlights what you click on
-        play.setContentAreaFilled(true); // IMPORTANT- Can change the button color, important of highlighting
-        play.setBackground(Color.red);
+        // FIXED: Corrected the variable names for prev and skip buttons
+        JButton prevChunk = new JButton("PREV");
+        prevChunk.setFocusPainted(true);
+        prevChunk.setContentAreaFilled(true); 
+        prevChunk.setBackground(Color.red);
 
-        JButton skipChunk = new JButton("PLAY");
-        play.setFocusPainted(true);// highlights what you click on
-        play.setContentAreaFilled(true); // IMPORTANT- Can change the button color, important of highlighting
-        play.setBackground(Color.red);
+        JButton skipChunk = new JButton("SKIP");
+        skipChunk.setFocusPainted(true);
+        skipChunk.setContentAreaFilled(true); 
+        skipChunk.setBackground(Color.red);
 
         JLayeredPane layerWindow = new JLayeredPane();
-        layerWindow.add(scrollPane, JLayeredPane.DEFAULT_LAYER);
-        layerWindow.add(closeButton, PALETTE_LAYER);
-        layerWindow.add(settingsButton, PALETTE_LAYER);
-        layerWindow.add(play, PALETTE_LAYER);
-        layerWindow.add(skipChunk, PALETTE_LAYER);
-        layerWindow.add(prevChunk, PALETTE_LAYER);
+        layerWindow.add(localScrollPane, JLayeredPane.DEFAULT_LAYER); // FIXED: Added localScrollPane here
+        layerWindow.add(closeButton, JLayeredPane.PALETTE_LAYER);
+        layerWindow.add(settingsButton, JLayeredPane.PALETTE_LAYER);
+        layerWindow.add(play, JLayeredPane.PALETTE_LAYER);
+        layerWindow.add(skipChunk, JLayeredPane.PALETTE_LAYER);
+        layerWindow.add(prevChunk, JLayeredPane.PALETTE_LAYER);
 
-        // Resizes components
-        // We could remove this becuase the fetuare is kind of useless and jsut add extra complexety.
-        // Also without it we would not need to pass the frame 
-        // chatgpt - with eddits
-        frame.addComponentListener(new ComponentAdapter() {
+        // --- FIXED SIZING LOGIC ---
+        // Create a reusable block of logic for sizing the components
+        Runnable updateLayout = () -> {
+            int w = frame.getContentPane().getWidth();
+            int h = frame.getContentPane().getHeight();
+            
+            // Fallback just in case the frame hasn't rendered its dimensions yet
+            if (w == 0 || h == 0) { w = 800; h = 600; }
+
+            layerWindow.setBounds(0, 0, w, h);
+            localScrollPane.setBounds(0, 0, w, h);
+
+            // Top button dimensions
+            int topBtnWidth = (int) (w * 0.08);
+            int topBtnHeight = (int) (h * 0.05);
+            int topPadding = 10;
+            
+            closeButton.setBounds(topPadding, topPadding, topBtnWidth, topBtnHeight);
+            settingsButton.setBounds(w - topBtnWidth - topPadding, topPadding, topBtnWidth + 20, topBtnHeight);
+
+            // Bottom button dimensions
+            int btnWidth = (int) (w * 0.1);
+            int btnHeight = (int) (w * 0.1);
+            play.setBounds((int) ((w - btnWidth) * .5), h - btnHeight, btnWidth, btnHeight);
+            skipChunk.setBounds((int) ((w - btnWidth) * .25), h - btnHeight, btnWidth, btnHeight);
+            prevChunk.setBounds((int) ((w - btnWidth) * .75), h - btnHeight, btnWidth, btnHeight);
+        };
+
+        // 1. Run it immediately so components aren't 0x0
+        updateLayout.run();
+
+        // 2. Add listener to handle both resizing and the moment the screen is shown
+        layerWindow.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
-            public void componentResized(ComponentEvent e) {
-                int w = frame.getContentPane().getWidth();
-                int h = frame.getContentPane().getHeight();
-
-                layerWindow.setBounds(0, 0, w, h);
-                scrollPane.setBounds(0, 0, w, h);
-
-                // Top button dimensions
-                int topBtnWidth = (int) (w * 0.08);
-                int topBtnHeight = (int) (h * 0.05);
-                int topPadding = 10;
-                
-                // Position close button at top-left
-                closeButton.setBounds(topPadding, topPadding, topBtnWidth, topBtnHeight);
-                
-                // Position settings button at top-right
-                settingsButton.setBounds(w - topBtnWidth - topPadding, topPadding, topBtnWidth + 20, topBtnHeight);
-
-                // Bottom button dimensions
-                int btnWidth = (int) (w * 0.1);
-                int btnHeight = (int) (w * 0.1);
-                play.setBounds((int) ((w - btnWidth) * .5), h - btnHeight, btnWidth, btnHeight);
-                skipChunk.setBounds((int) ((w - btnWidth) * .25), h - btnHeight, btnWidth, btnHeight);
-                prevChunk.setBounds((int) ((w - btnWidth) * .75), h - btnHeight, btnWidth, btnHeight);
-
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                updateLayout.run();
+            }
+            
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent e) {
+                // Triggers the exact moment CardLayout brings this pane to the front
+                updateLayout.run();
             }
         });
-        // END of GPT
 
         return layerWindow;
-
     }
-
 }

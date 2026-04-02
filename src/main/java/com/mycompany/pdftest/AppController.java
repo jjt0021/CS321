@@ -44,6 +44,9 @@ public class AppController {
     // UI Components
     private CardLayout cardLayout;
     private JPanel screens;
+    
+    // Filemanager 
+    private JPanel fileManagerUIPane;
 
     /**
      * Initializes the controller with application framework
@@ -59,6 +62,7 @@ public class AppController {
      * @param pdfPath Path to the PDF file to load
      * @throws IOException if PDF loading fails
      */
+    
     public void initializeModels(String pdfPath) throws IOException {
         // Load settings model
         settingsModel = new Settings();
@@ -74,20 +78,27 @@ public class AppController {
         currentBookPath = pdf.getAbsolutePath();
         currentBookName = pdf.getName();
         
+        // Check database for saved progress
+        int savedChunk = 0;
+        for (AudioBookDB.AudioBook book : audioBookDBModel.getAudioBooks()) {
+            if (book.filePath.equals(pdfPath)) {
+                savedChunk = book.currentChunk;
+                break;
+            }
+        }
+        
         // Initialize play state model
-        // PlayState now acts as a pure model with observable capabilities
         playStateModel = new PlayState(
-            0,                                                     // currentChunk index
-            currentBook,                                           // Full text chunks
-            initialSettings.loadedRange,                          // GUI window size
-            initialSettings.reloadRange,                          // Reload trigger threshold
-            initialSettings.cacheSize,                            // Audio cache size
+            savedChunk,                                           // Uses saved progress instead of 0
+            currentBook,                                          
+            initialSettings.loadedRange,                          
+            initialSettings.reloadRange,                          
+            initialSettings.cacheSize,                            
             currentBookName,
-            settingsModel.getModel(initialSettings.TtsModel),    // TTS model
+            settingsModel.getModel(initialSettings.TtsModel),    
             initialSettings.voice
         );
     }
-
     /**
      * Initialize views and set up the UI
      */
@@ -104,6 +115,12 @@ public class AppController {
         screens.add(bookUIPane, "audioBook");
         
         frame.setContentPane(screens);
+        
+        
+        // create the file manger view 
+        FileManagerUI fileManagerUI = new FileManagerUI(this, audioBookDBModel);
+        fileManagerUIPane = fileManagerUI.makeGUI();
+        
     }
 
     /**
@@ -124,13 +141,50 @@ public class AppController {
      * Show the file manager view
      */
     public void showFileManagerView() {
-        // TODO: Implement FileManager view initialization and display
-        // For now, this saves current progress and could transition to file manager
-        saveBookProgress();
-        System.out.println("Controller: File Manager view requested (to be implemented)");
+        saveBookProgress(); // Keeps your current progress saving logic
+        
+        // Refresh the file manager list before showing it
+        FileManagerUI fileManagerUI = new FileManagerUI(this, audioBookDBModel);
+        screens.add(fileManagerUI.makeGUI(), "FileManager");
+        
+        cardLayout.show(screens, "FileManager");
+        System.out.println("Controller: File Manager view displayed");
     }
+    
+    /**
+     * Safely loads a new book and refreshes the UI
+     */
+    public void openBook(String filePath) throws IOException {
+        // Save progress of the current book before switching
+        if (currentBookPath != null) {
+            saveBookProgress();
+        }
 
-    // ========== Controller Actions - Called by Views ==========
+        // Initialize models with the new PDF data
+        initializeModels(filePath);
+
+        // Remove the old book pane from the CardLayout to prevent stacking
+        if (bookUIPane != null) {
+            screens.remove(bookUIPane);
+        }
+
+        // Generate the new book UI with the newly loaded text
+        bookUIView = new BookUI(playStateModel, settingsModel);
+        bookUIPane = bookUIView.makePane(frame, playStateModel, this);
+
+        // Add the updated pane back to the CardLayout
+        screens.add(bookUIPane, "audioBook");
+        
+        //Route to the Player view FIRST so it is active on screen
+        showAudioBookView(); 
+        
+        // Force a hard visual refresh AFTER it is brought to the front
+        screens.revalidate();
+        screens.repaint();
+    } 
+    
+    
+// ========== Controller Actions - Called by Views ==========
 
     /**
      * Handle chunk selection from BookUI
