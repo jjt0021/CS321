@@ -47,6 +47,7 @@ public class PlayState implements Audio.PlaybackListener {
     // prefetch/cache fields
     private BlockingQueue<Integer> prefetchQueue = new LinkedBlockingQueue<>();
     private ExecutorService prefetchExecutor;
+    private ExecutorService playbackExecutor; // Separate executor for playback requests
     private Set<Integer> enqueued = ConcurrentHashMap.newKeySet();
     private Path audioCacheDir = Paths.get("audio_cache");
 
@@ -76,48 +77,14 @@ public class PlayState implements Audio.PlaybackListener {
             System.err.println("Failed to create audio cache dir: " + ex.getMessage());
         }
 
-        prefetchExecutor = Executors.newSingleThreadExecutor();
-        prefetchExecutor.submit(() -> {
-            try {
-                while (!Thread.currentThread().isInterrupted()) {
-                    int idx = prefetchQueue.take(); // blocks until work
-                    enqueued.remove(idx);
-
-                    // skip if already cached
-                    if (cachedWindow.containsKey(idx)) {
-                        continue;
-                    }
-
-                    // create Audio instance (uses existing Audio constructor)
-                    if (idx < 0 || idx >= fullBook.size()) {
-                        continue;
-                    }
-                    Audio audio = new Audio(fullBook.get(idx), voice, initialModel.URL, initialModel.name, idx, bookName, this);
-                    cachedWindow.put(idx, audio);
-
-                    // perform generation in background using the existing synchronous requestAudio()
-                    try {
-                        audio.requestAudio(); // requestAudio runs async internals in Audio but may block here
-                        // set expected file path in cache (mp3)
-                        Path generated = audioCacheDir.resolve(String.format("book_%s_chunk_%d.mp3", bookName, idx));
-                        audio.setFileURL(generated.toString());
-                    } catch (Exception e) {
-                        System.err.println("Audio generation failed for chunk " + idx + ": " + e.getMessage());
-                    }
-
-                    // run cleanup periodically
-                    prefetchAndCleanUP();
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
-        //END of ChatGPT
+        prefetchExecutor = Executors.newFixedThreadPool(3); // 3 concurrent prefetch threads
+        playbackExecutor = Executors.newSingleThreadExecutor(); // Separate thread for immediate playback
+        System.out.println("[PlayState] Initialized: prefetchExecutor with 3 threads, playbackExecutor with 1 thread");
     }
 
     public boolean isIncorectExtention(File file) {
         String fileName = file.getName();
-        return (!fileName.endsWith(".mp3"));
+        return (!fileName.endsWith(".wav"));
     }
 
     public boolean isIncorrectBook(File file) {
@@ -173,17 +140,69 @@ public class PlayState implements Audio.PlaybackListener {
     }
 
     public void updateCachWindow() {
-        int from = Math.max(0, currentChunk);
-        int to = Math.min(fullBook.size() - 1, currentChunk + cacheSize);
+        // Keep 5 chunks behind and 5 chunks ahead (current chunk in the middle of window)
+        int from = Math.max(0, currentChunk - cacheSize);  // 5 behind
+        int to = Math.min(fullBook.size() - 1, currentChunk + cacheSize);  // 5 ahead
         for (int i = from; i <= to; i++) {
             if (cachedWindow.containsKey(i)) {
                 continue;
             }
 
             int chunkInt = i;
-            cachedWindow.put(i, new Audio(fullBook.get(chunkInt), voice, initialModel.URL, initialModel.name, chunkInt, bookName, this));
+            Audio newAudio = new Audio(fullBook.get(chunkInt), voice, initialModel.URL, initialModel.name, chunkInt, bookName, this);
+            cachedWindow.put(i, newAudio);
+            // Enqueue for prefetch generation if not already enqueued
+            enqueuePrefetch(i);
         }
 
+    }
+
+    /**
+     * Enqueue a chunk for prefetch/generation if not already enqueued or generated
+     */
+    private void enqueuePrefetch(int chunkIndex) {
+        if (chunkIndex < 0 || chunkIndex >= fullBook.size()) {
+            return;
+        }
+        
+        Audio audio = cachedWindow.get(chunkIndex);
+        
+        // Skip if already generated (has file URL)
+        if (audio != null && audio.getFileURL() != null) {
+            return;
+        }
+        
+        // Skip if already enqueued
+        if (enqueued.contains(chunkIndex)) {
+            return;
+        }
+        
+        enqueued.add(chunkIndex);
+        System.out.println("[PlayState] Submitting chunk " + chunkIndex + " for prefetch");
+        System.out.flush();
+        
+        // Submit directly to thread pool instead of queue
+        prefetchExecutor.submit(() -> {
+            System.out.println("[PlayState.Prefetch] Processing chunk " + chunkIndex);
+            try {
+                Audio prefetchAudio = cachedWindow.get(chunkIndex);
+                if (prefetchAudio == null) {
+                    prefetchAudio = new Audio(fullBook.get(chunkIndex), voice, initialModel.URL, initialModel.name, chunkIndex, bookName, this);
+                    cachedWindow.put(chunkIndex, prefetchAudio);
+                }
+                
+                if (prefetchAudio.getFileURL() == null) {
+                    System.out.println("[PlayState.Prefetch] Requesting audio for chunk " + chunkIndex);
+                    System.out.flush();
+                    prefetchAudio.requestAudio();
+                    System.out.println("[PlayState.Prefetch] Chunk " + chunkIndex + " ready, fileURL=" + prefetchAudio.getFileURL());
+                    System.out.flush();
+                }
+            } catch (Exception e) {
+                System.err.println("[PlayState.Prefetch] ERROR processing chunk " + chunkIndex + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
     }
 
     public void prefetchAndCleanUP() {
@@ -278,20 +297,20 @@ public class PlayState implements Audio.PlaybackListener {
                 // create and request audio in background
                 Audio newAudio = new Audio(fullBook.get(currentChunk), voice, initialModel.URL, initialModel.name, currentChunk, bookName, this);
                 cachedWindow.put(currentChunk, newAudio);
-                System.out.println("[PlayState] Audio instance created for chunk " + currentChunk + ", submitting to executor");
-                prefetchExecutor.submit(() -> {
+                System.out.println("[PlayState] Audio instance created for chunk " + currentChunk + ", submitting to playback executor");
+                playbackExecutor.submit(() -> {
                     try {
-                        System.out.println("[PlayState] Executor: Calling requestAudio() for chunk " + currentChunk);
+                        System.out.println("[PlayState] Playback Executor: Calling requestAudio() for chunk " + currentChunk);
                         newAudio.requestAudio();
                         // attempt to start playback when ready
                         if (newAudio.getFileURL() != null) {
-                            System.out.println("[PlayState] Executor: Audio ready at " + newAudio.getFileURL() + ", calling playAudio()");
+                            System.out.println("[PlayState] Playback Executor: Audio ready at " + newAudio.getFileURL() + ", calling playAudio()");
                             newAudio.playAudio();
                         } else {
-                            System.err.println("[PlayState] Executor: ERROR - Audio file URL is null after requestAudio()");
+                            System.err.println("[PlayState] Playback Executor: ERROR - Audio file URL is null after requestAudio()");
                         }
                     } catch (Exception e) {
-                        System.err.println("[PlayState] Executor ERROR for chunk " + currentChunk + ": " + e.getMessage());
+                        System.err.println("[PlayState] Playback Executor ERROR for chunk " + currentChunk + ": " + e.getMessage());
                         e.printStackTrace();
                     }
                 });
@@ -337,6 +356,11 @@ public class PlayState implements Audio.PlaybackListener {
         System.out.println("[PlayState.onChunkFinished] Auto-advancing from chunk " + chunkNumber + " to chunk " + nextChunk);
         setCurrentChunk(nextChunk);
         
+        // Immediately ensure cache window is populated and prefetch queued for upcoming chunks
+        // This creates Audio objects for currentChunk through currentChunk+cacheSize and enqueues them
+        updateCachWindow();
+        System.out.println("[PlayState.onChunkFinished] Cache window updated for chunks " + nextChunk + " through " + Math.min(fullBook.size() - 1, nextChunk + cacheSize));
+        
         // Auto-play next chunk
         Audio nextAudio = cachedWindow.get(nextChunk);
         System.out.println("[PlayState.onChunkFinished] Looking for cached audio for chunk " + nextChunk + ", found: " + (nextAudio != null));
@@ -350,22 +374,37 @@ public class PlayState implements Audio.PlaybackListener {
                     onPlaybackError("Failed to play chunk " + nextChunk + ": " + e.getMessage());
                 }
             } else {
-                // Audio file not yet generated, request and play when ready
-                System.out.println("[PlayState.onChunkFinished] Next chunk " + nextChunk + " not generated yet, requesting in background");
-                prefetchExecutor.submit(() -> {
-                    try {
-                        if (nextAudio.currentState == Audio.AudioState.MISSING || 
-                            nextAudio.currentState == Audio.AudioState.FAILED) {
-                            System.out.println("[PlayState.onChunkFinished] Background: Requesting audio for chunk " + nextChunk);
-                            nextAudio.requestAudio();
+                // Audio file not yet generated, wait for prefetch to complete it
+                System.out.println("[PlayState.onChunkFinished] Next chunk " + nextChunk + " being generated by prefetch, waiting for completion...");
+                playbackExecutor.submit(() -> {
+                    // Wait for audio generation to complete (with timeout)
+                    int maxWaitAttempts = 60; // Wait up to 60 seconds
+                    int attempts = 0;
+                    while (nextAudio.getFileURL() == null && attempts < maxWaitAttempts && isPlaying) {
+                        try {
+                            Thread.sleep(1000); // Check every 1 second
+                            attempts++;
+                            if (attempts % 5 == 0) { // Log every 5 seconds
+                                System.out.println("[PlayState.onChunkFinished] Waiting for chunk " + nextChunk + "... (" + attempts + "s elapsed)");
+                            }
+                        } catch (InterruptedException e) {
+                            System.out.println("[PlayState.onChunkFinished] Wait interrupted for chunk " + nextChunk);
+                            break;
                         }
-                        if (nextAudio.getFileURL() != null) {
-                            System.out.println("[PlayState.onChunkFinished] Background: Playing chunk " + nextChunk);
+                    }
+                    
+                    if (nextAudio.getFileURL() != null && isPlaying) {
+                        System.out.println("[PlayState.onChunkFinished] Chunk " + nextChunk + " ready after " + attempts + " seconds, playing now");
+                        try {
                             nextAudio.playAudio();
+                        } catch (Exception e) {
+                            System.err.println("[PlayState.onChunkFinished] Failed to play chunk " + nextChunk + ": " + e.getMessage());
+                            onPlaybackError("Failed to play chunk " + nextChunk + ": " + e.getMessage());
                         }
-                    } catch (Exception e) {
-                        System.err.println("[PlayState.onChunkFinished] Background: Failed for chunk " + nextChunk + ": " + e.getMessage());
-                        onPlaybackError("Failed to generate chunk " + nextChunk + ": " + e.getMessage());
+                    } else if (!isPlaying) {
+                        System.out.println("[PlayState.onChunkFinished] Playback stopped, abandoning chunk " + nextChunk);
+                    } else {
+                        System.err.println("[PlayState.onChunkFinished] Chunk " + nextChunk + " generation timeout after " + maxWaitAttempts + " seconds");
                     }
                 });
             }

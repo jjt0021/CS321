@@ -21,6 +21,9 @@ import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 /**
  *
  * @author elimo
@@ -94,14 +97,20 @@ public class Audio {
         System.out.flush();
         HttpClient client = HttpClient.newHttpClient();
 
-        String jsonBody = String.format("""
-            {
-              "model": "%s",
-              "input": "%s",
-              "voice": "%s",
-              "response_format": "mp3"
-            }
-            """, model, text, voice);
+        //Chat-GPT edited thsie lines. There were some issues with json formating.
+        // Build JSON using GSON to properly escape special characters in the text
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("model", model);
+        jsonObject.addProperty("input", text);
+        jsonObject.addProperty("voice", voice);
+        jsonObject.addProperty("response_format", "wav");
+        
+        Gson gson = new Gson();
+        String jsonBody = gson.toJson(jsonObject);
+        
+        // End of GPT.
+        
+        System.out.println("[Audio] JSON Body: " + jsonBody);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -114,32 +123,39 @@ public class Audio {
         try {
             System.out.println("[Audio] *** SENDING HTTP REQUEST to " + url + " ***");
             System.out.flush();
-            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-            System.out.println("[Audio] *** HTTP RESPONSE RECEIVED: status=" + response.statusCode() + " ***");
-            System.out.flush();
+            // Use sendAsync() instead of send() - this actually works with the TTS server
+            client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
+                    .thenAccept(response -> {
+                        try {
+                            System.out.println("[Audio] *** HTTP RESPONSE RECEIVED: status=" + response.statusCode() + " ***");
+                            System.out.flush();
 
-            if (response.statusCode() != 200) {
-                System.err.println("[Audio] HTTP error for chunk " + chunk + ": " + response.statusCode());
-                currentState = AudioState.FAILED;
-                return;
-            }
+                            if (response.statusCode() != 200) {
+                                System.err.println("[Audio] HTTP error for chunk " + chunk + ": " + response.statusCode());
+                                currentState = AudioState.FAILED;
+                                return;
+                            }
 
-            System.out.println("[Audio] Response successful, received " + response.body().length + " bytes");
-            Path outputPath = Paths.get(String.format("book_%s_chunk_%d.mp3", bookName, chunk));
-            Files.write(outputPath, response.body());
-            setFileURL(outputPath.toString());
-            currentState = AudioState.READY;
-            System.out.println("[Audio] Chunk " + chunk + " successfully saved to " + outputPath.toAbsolutePath());
-
+                            System.out.println("[Audio] Response successful, received " + response.body().length + " bytes");
+                            Path outputPath = Paths.get(String.format("book_%s_chunk_%d.wav", bookName, chunk));
+                            Files.write(outputPath, response.body());
+                            setFileURL(outputPath.toString());
+                            currentState = AudioState.READY;
+                            System.out.println("[Audio] Chunk " + chunk + " successfully saved to " + outputPath.toAbsolutePath());
+                            System.out.flush();
+                        } catch (IOException e) {
+                            System.err.println("[Audio] IOException in async response handler for chunk " + chunk + ": " + e.getMessage());
+                            e.printStackTrace();
+                            currentState = AudioState.FAILED;
+                        }
+                    })
+                    .join(); // Wait for the async operation to complete
         } catch (Exception e) {
-            System.err.println("[Audio] *** EXCEPTION during requestAudio for chunk " + chunk + ": " + e.getClass().getSimpleName() + " ***");
-            System.err.println("[Audio] Exception message: " + e.getMessage());
-            System.err.flush();
+            System.err.println("[Audio] Exception during requestAudio for chunk " + chunk + ": " + e.getMessage());
             e.printStackTrace();
             currentState = AudioState.FAILED;
         }
-        System.out.println("[Audio] *** requestAudio() END for chunk " + chunk + " ***");
-        System.out.flush();
+
     }
 
     public void setFileURL(String path) {
