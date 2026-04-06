@@ -16,15 +16,8 @@ import javax.swing.JScrollPane;
 import com.mycompany.pdftest.Settings.SettingsValues;
 
 /**
- * AppController - Main application controller following MVC architecture
- * 
- * This controller acts as the mediator between Model and View layers:
- * - Initializes the application and loads data
- * - Handles user interactions from views
- * - Updates models based on user actions
- * - Notifies views of model state changes via observer pattern
- * 
- * @author elimo
+This class is the controller, it was added to more closly mirror the mvc model.
+That is why this class was added.
  */
 public class AppController {
 
@@ -103,6 +96,10 @@ public class AppController {
      * Initialize views and set up the UI
      */
     public void initializeViews() throws IOException {
+        // Create file manager view first
+        FileManagerUI fileManagerUI = new FileManagerUI(this, audioBookDBModel);
+        fileManagerUIPane = fileManagerUI.makeGUI();
+        
         // Create book UI view
         bookUIView = new BookUI(playStateModel, settingsModel);
         bookUIPane = bookUIView.makePane(frame, playStateModel, this);
@@ -111,16 +108,11 @@ public class AppController {
         settingsUIPane = SettingsUI.createSettingsGUI(settingsModel, this);
         
         // Set up card layout for screen switching
+        screens.add(fileManagerUIPane, "FileManager");
         screens.add(settingsUIPane, "Settings");
         screens.add(bookUIPane, "audioBook");
         
         frame.setContentPane(screens);
-        
-        
-        // create the file manger view 
-        FileManagerUI fileManagerUI = new FileManagerUI(this, audioBookDBModel);
-        fileManagerUIPane = fileManagerUI.makeGUI();
-        
     }
 
     /**
