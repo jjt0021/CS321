@@ -137,6 +137,9 @@ public class AppController {
      * @param chunkNum The chunk number selected by user
      */
     public void onChunkSelected(int chunkNum) {
+        // Stop current playback before switching chunks
+        playStateModel.stopCurrentPlayback();
+        
         playStateModel.setCurrentChunk(chunkNum);
         System.out.println("Controller: Current chunk updated to " + chunkNum);
         
@@ -155,18 +158,7 @@ public class AppController {
         System.out.println("Controller: Play state changed to " + shouldPlay);
     }
 
-    /**
-     * Handle settings save from SettingsUI
-     * @param progressBarEnabled progress bar setting
-     * @param chunkLoadedRange loaded range setting
-     * @param chunkReloadedRange reload range setting
-     * @param cacheSizeInt cache size setting
-     * @param voiceSelected selected voice
-     * @param ttsAddr TTS API address
-     * @param voicesList list of available voices
-     * @param modelName model name
-     * @param apiKeyValue API key
-     */
+    // =========== Handels Saving Settings ================
     public void onSettingsSaved(
             boolean progressBarEnabled,
             int chunkLoadedRange,

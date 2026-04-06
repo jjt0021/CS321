@@ -30,7 +30,7 @@ import com.mycompany.pdftest.Settings.TtsModel;
 
 //TODO need to add a the check for it it is fialed, generating or generated.
 //This classes job keeps track of the current chunk, checks if a reload is needed for the gui, and keeps track of if the playback is true
-public class PlayState {
+public class PlayState implements Audio.PlaybackListener {
 
     private int currentChunk;
 
@@ -92,7 +92,7 @@ public class PlayState {
                     if (idx < 0 || idx >= fullBook.size()) {
                         continue;
                     }
-                    Audio audio = new Audio(fullBook.get(idx), voice, initialModel.URL, initialModel.name, idx, bookName);
+                    Audio audio = new Audio(fullBook.get(idx), voice, initialModel.URL, initialModel.name, idx, bookName, this);
                     cachedWindow.put(idx, audio);
 
                     // perform generation in background using the existing synchronous requestAudio()
@@ -181,7 +181,7 @@ public class PlayState {
             }
 
             int chunkInt = i;
-            cachedWindow.put(i, new Audio(fullBook.get(chunkInt), voice, initialModel.URL, initialModel.name, chunkInt, bookName));
+            cachedWindow.put(i, new Audio(fullBook.get(chunkInt), voice, initialModel.URL, initialModel.name, chunkInt, bookName, this));
         }
 
     }
@@ -263,31 +263,40 @@ public class PlayState {
 
     public void setPlayState(boolean playState) {
         if (isPlaying == playState) {
+            System.out.println("[PlayState] Play state already " + playState + ", no change needed");
             return;
         }
 
         this.isPlaying = playState;
 
         if (isPlaying) {
+            System.out.println("[PlayState] PLAY requested for chunk " + currentChunk);
             //TODO need to add pause and play things.
             Audio audio = cachedWindow.get(currentChunk);
             if (audio == null) {
-                System.out.println("No cached audio for chunk " + currentChunk + ", requesting generation.");
+                System.out.println("[PlayState] No cached audio for chunk " + currentChunk + ", requesting generation.");
                 // create and request audio in background
-                Audio newAudio = new Audio(fullBook.get(currentChunk), voice, initialModel.URL, initialModel.name, currentChunk, bookName);
+                Audio newAudio = new Audio(fullBook.get(currentChunk), voice, initialModel.URL, initialModel.name, currentChunk, bookName, this);
                 cachedWindow.put(currentChunk, newAudio);
+                System.out.println("[PlayState] Audio instance created for chunk " + currentChunk + ", submitting to executor");
                 prefetchExecutor.submit(() -> {
                     try {
+                        System.out.println("[PlayState] Executor: Calling requestAudio() for chunk " + currentChunk);
                         newAudio.requestAudio();
                         // attempt to start playback when ready
                         if (newAudio.getFileURL() != null) {
+                            System.out.println("[PlayState] Executor: Audio ready at " + newAudio.getFileURL() + ", calling playAudio()");
                             newAudio.playAudio();
+                        } else {
+                            System.err.println("[PlayState] Executor: ERROR - Audio file URL is null after requestAudio()");
                         }
                     } catch (Exception e) {
-                        System.err.println("Failed to generate/play audio for chunk " + currentChunk + ": " + e.getMessage());
+                        System.err.println("[PlayState] Executor ERROR for chunk " + currentChunk + ": " + e.getMessage());
+                        e.printStackTrace();
                     }
                 });
             } else {
+                System.out.println("[PlayState] Found cached audio for chunk " + currentChunk + ", resuming playback");
                 audio.resumeAudio();
             }
         } else {
@@ -301,5 +310,92 @@ public class PlayState {
 
     public boolean getPlayState() {
         return isPlaying;
+    }
+
+    /**
+     * Called when a chunk finishes playing - auto-advances to next chunk if still playing
+     * Implements Audio.PlaybackListener interface
+     */
+    @Override
+    public void onChunkFinished(int chunkNumber) {
+        System.out.println("[PlayState.onChunkFinished] Chunk " + chunkNumber + " finished, isPlaying=" + isPlaying);
+        
+        if (!isPlaying) {
+            System.out.println("[PlayState.onChunkFinished] Playback not active, not advancing chunk");
+            return;
+        }
+        
+        // Check if we're at the last chunk
+        if (chunkNumber >= fullBook.size() - 1) {
+            System.out.println("[PlayState.onChunkFinished] Reached end of book");
+            isPlaying = false;
+            return;
+        }
+        
+        // Advance to next chunk and play it
+        int nextChunk = chunkNumber + 1;
+        System.out.println("[PlayState.onChunkFinished] Auto-advancing from chunk " + chunkNumber + " to chunk " + nextChunk);
+        setCurrentChunk(nextChunk);
+        
+        // Auto-play next chunk
+        Audio nextAudio = cachedWindow.get(nextChunk);
+        System.out.println("[PlayState.onChunkFinished] Looking for cached audio for chunk " + nextChunk + ", found: " + (nextAudio != null));
+        if (nextAudio != null) {
+            if (nextAudio.getFileURL() != null) {
+                System.out.println("[PlayState.onChunkFinished] Next chunk " + nextChunk + " has file ready, playing now");
+                try {
+                    nextAudio.playAudio();
+                } catch (Exception e) {
+                    System.err.println("[PlayState.onChunkFinished] Failed to play next chunk: " + e.getMessage());
+                    onPlaybackError("Failed to play chunk " + nextChunk + ": " + e.getMessage());
+                }
+            } else {
+                // Audio file not yet generated, request and play when ready
+                System.out.println("[PlayState.onChunkFinished] Next chunk " + nextChunk + " not generated yet, requesting in background");
+                prefetchExecutor.submit(() -> {
+                    try {
+                        if (nextAudio.currentState == Audio.AudioState.MISSING || 
+                            nextAudio.currentState == Audio.AudioState.FAILED) {
+                            System.out.println("[PlayState.onChunkFinished] Background: Requesting audio for chunk " + nextChunk);
+                            nextAudio.requestAudio();
+                        }
+                        if (nextAudio.getFileURL() != null) {
+                            System.out.println("[PlayState.onChunkFinished] Background: Playing chunk " + nextChunk);
+                            nextAudio.playAudio();
+                        }
+                    } catch (Exception e) {
+                        System.err.println("[PlayState.onChunkFinished] Background: Failed for chunk " + nextChunk + ": " + e.getMessage());
+                        onPlaybackError("Failed to generate chunk " + nextChunk + ": " + e.getMessage());
+                    }
+                });
+            }
+        } else {
+            System.out.println("[PlayState.onChunkFinished] ERROR: Next chunk " + nextChunk + " not in cache");
+        }
+    }
+
+    /**
+     * Called when a playback error occurs
+     * Implements Audio.PlaybackListener interface
+     */
+    @Override
+    public void onPlaybackError(String errorMessage) {
+        System.err.println("[PlayState.onPlaybackError] " + errorMessage);
+        // Stop playback on error
+        isPlaying = false;
+    }
+
+    /**
+     * Stop current chunk playback before switching chunks
+     */
+    public void stopCurrentPlayback() {
+        System.out.println("[PlayState] stopCurrentPlayback() called for chunk " + currentChunk);
+        Audio audio = cachedWindow.get(currentChunk);
+        if (audio != null) {
+            audio.stopAudio();
+            System.out.println("[PlayState] Successfully stopped chunk " + currentChunk);
+        } else {
+            System.out.println("[PlayState] No audio found for chunk " + currentChunk + " to stop");
+        }
     }
 }
