@@ -32,6 +32,13 @@ import com.mycompany.pdftest.Settings.TtsModel;
 //This classes job keeps track of the current chunk, checks if a reload is needed for the gui, and keeps track of if the playback is true
 public class PlayState implements Audio.PlaybackListener {
 
+    /**
+     * Listener interface for chunk changes
+     */
+    public interface OnChunkChangedListener {
+        void onChunkChanged(int newChunk);
+    }
+
     private int currentChunk;
 
     private boolean isPlaying = false;
@@ -48,6 +55,7 @@ public class PlayState implements Audio.PlaybackListener {
     private BlockingQueue<Integer> prefetchQueue = new LinkedBlockingQueue<>();
     private ExecutorService prefetchExecutor;
     private ExecutorService playbackExecutor; // Separate executor for playback requests
+    private OnChunkChangedListener chunkChangedListener;
     private Set<Integer> enqueued = ConcurrentHashMap.newKeySet();
     private Path audioCacheDir = Paths.get("audio_cache");
 
@@ -332,6 +340,14 @@ public class PlayState implements Audio.PlaybackListener {
     }
 
     /**
+     * Set a listener to be notified when chunk changes
+     * @param listener the OnChunkChangedListener to notify
+     */
+    public void setOnChunkChangedListener(OnChunkChangedListener listener) {
+        this.chunkChangedListener = listener;
+    }
+
+    /**
      * Called when a chunk finishes playing - auto-advances to next chunk if still playing
      * Implements Audio.PlaybackListener interface
      */
@@ -355,6 +371,11 @@ public class PlayState implements Audio.PlaybackListener {
         int nextChunk = chunkNumber + 1;
         System.out.println("[PlayState.onChunkFinished] Auto-advancing from chunk " + chunkNumber + " to chunk " + nextChunk);
         setCurrentChunk(nextChunk);
+        
+        // Notify listener of chunk change
+        if (chunkChangedListener != null) {
+            chunkChangedListener.onChunkChanged(nextChunk);
+        }
         
         // Immediately ensure cache window is populated and prefetch queued for upcoming chunks
         // This creates Audio objects for currentChunk through currentChunk+cacheSize and enqueues them

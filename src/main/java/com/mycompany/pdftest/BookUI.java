@@ -7,16 +7,15 @@ package com.mycompany.pdftest;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
-import static javax.swing.JLayeredPane.PALETTE_LAYER;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
@@ -37,6 +36,7 @@ public class BookUI {
     //need to make it not staic so each book gets a fresh UI
     private JPanel panel;
     private JScrollPane scrollPane;
+    private Map<Integer, JButton> chunkButtons = new HashMap<>();
 
     // TODO: load models.
     public BookUI(PlayState playState, Settings settingsObject) {
@@ -68,6 +68,7 @@ public class BookUI {
 
         // Reload content
         panel.removeAll();
+        chunkButtons.clear();
 
         // This makes all of the buttons and adds them to the scroll pane.
         for (int i = 0; i < window.size(); i++) {
@@ -102,6 +103,7 @@ public class BookUI {
                 }
             });
 
+            chunkButtons.put(absoluteIndex, button);
             panel.add(button);
         }
 
@@ -127,6 +129,28 @@ public class BookUI {
      */
     public void updateScrollPane(ArrayList<String> window) {
         makeScrollPane(window, playState);
+        highlightCurrentChunk(playState.getCurrentChunk());
+    }
+    
+    /**
+     * Highlight the button for the current chunk
+     * @param currentChunkNum the chunk number to highlight
+     */
+    public void highlightCurrentChunk(int currentChunkNum) {
+        // Unhighlight all buttons
+        for (JButton button : chunkButtons.values()) {
+            button.setBackground(Color.DARK_GRAY);
+            button.setContentAreaFilled(false);
+            button.setForeground(Color.WHITE);
+        }
+        
+        // Highlight the current chunk button
+        if (chunkButtons.containsKey(currentChunkNum)) {
+            JButton currentButton = chunkButtons.get(currentChunkNum);
+            currentButton.setBackground(Color.YELLOW);
+            currentButton.setContentAreaFilled(true);
+            currentButton.setForeground(Color.BLACK);
+        }
     }
 
   
@@ -137,6 +161,9 @@ public class BookUI {
 
         // Call the method directly without wrapping it in a new JScrollPane
         JScrollPane localScrollPane = makeScrollPane(playstate.reloadChunks(), playstate);
+        
+        // Highlight the current chunk on initial load
+        highlightCurrentChunk(playstate.getCurrentChunk());
 
 
         // ========== Top Navigation Buttons ==========

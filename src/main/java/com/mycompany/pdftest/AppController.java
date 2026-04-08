@@ -71,10 +71,10 @@ public class AppController {
         currentBookPath = pdf.getAbsolutePath();
         currentBookName = pdf.getName();
         
-        // Check database for saved progress
+        // Check database for saved progress using absolute path
         int savedChunk = 0;
         for (AudioBookDB.AudioBook book : audioBookDBModel.getAudioBooks()) {
-            if (book.filePath.equals(pdfPath)) {
+            if (book.filePath.equals(currentBookPath)) {
                 savedChunk = book.currentChunk;
                 break;
             }
@@ -103,6 +103,11 @@ public class AppController {
         // Create book UI view
         bookUIView = new BookUI(playStateModel, settingsModel);
         bookUIPane = bookUIView.makePane(frame, playStateModel, this);
+        
+        // Set up listener for chunk changes during auto-advance
+        playStateModel.setOnChunkChangedListener(newChunk -> {
+            bookUIView.highlightCurrentChunk(newChunk);
+        });
         
         // Create settings UI view
         settingsUIPane = SettingsUI.createSettingsGUI(settingsModel, this);
@@ -133,6 +138,9 @@ public class AppController {
      * Show the file manager view
      */
     public void showFileManagerView() {
+        // Stop playback when exiting the book
+        playStateModel.stopCurrentPlayback();
+        
         saveBookProgress(); // Keeps your current progress saving logic
         
         // Refresh the file manager list before showing it
@@ -163,6 +171,11 @@ public class AppController {
         // Generate the new book UI with the newly loaded text
         bookUIView = new BookUI(playStateModel, settingsModel);
         bookUIPane = bookUIView.makePane(frame, playStateModel, this);
+        
+        // Set up listener for chunk changes during auto-advance
+        playStateModel.setOnChunkChangedListener(newChunk -> {
+            bookUIView.highlightCurrentChunk(newChunk);
+        });
 
         // Add the updated pane back to the CardLayout
         screens.add(bookUIPane, "audioBook");
@@ -176,7 +189,7 @@ public class AppController {
     } 
     
     
-// ========== Controller Actions - Called by Views ==========
+// ========== Controller Actions ==========
 
     /**
      * Handle chunk selection from BookUI
@@ -187,7 +200,10 @@ public class AppController {
         playStateModel.stopCurrentPlayback();
         
         playStateModel.setCurrentChunk(chunkNum);
-        System.out.println("Controller: Current chunk updated to " + chunkNum);
+        System.out.println("Current chunk updated to " + chunkNum);
+        
+        // Highlight the selected chunk button
+        bookUIView.highlightCurrentChunk(chunkNum);
         
         // Check if reload is needed and notify view
         if (playStateModel.reloadCheck()) {
@@ -201,7 +217,7 @@ public class AppController {
      */
     public void onPlayStateChanged(boolean shouldPlay) {
         playStateModel.setPlayState(shouldPlay);
-        System.out.println("Controller: Play state changed to " + shouldPlay);
+        System.out.println("Play state changed");
     }
 
     // =========== Handels Saving Settings ================
@@ -236,7 +252,7 @@ public class AppController {
         
         settingsModel.save();
         
-        System.out.println("Controller: Settings saved successfully");
+        System.out.println("Settings have been saved");
     }
 
     /**
@@ -248,7 +264,7 @@ public class AppController {
         System.out.println("Controller: Book progress saved");
     }
 
-    // ========== Getters for models (Views should use these, not direct access) ==========
+    // ========== Getters for models  ==========
 
     /**
      * Get the play state model

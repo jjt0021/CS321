@@ -1,10 +1,24 @@
 package com.mycompany.pdftest;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.io.File;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * Responsible for the GUI that allows users to manage their PDF files. 
@@ -23,14 +37,20 @@ public class FileManagerUI {
     /** Intent: Make the GUI for managing pdfs. */
     public JPanel makeGUI() {
         JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(Color.DARK_GRAY);
         
         // Top section: Title and Add Button
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.setBackground(Color.DARK_GRAY);
         JLabel titleLabel = new JLabel("Your Audiobooks");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        titleLabel.setForeground(Color.WHITE);
         
         JButton addButton = new JButton("+ Add PDF");
-        addButton.setFocusPainted(false);
+        addButton.setFocusPainted(true);
+        addButton.setContentAreaFilled(true);
+        addButton.setBackground(Color.LIGHT_GRAY);
+        addButton.setForeground(Color.BLACK);
         addButton.addActionListener(e -> uploadFile());
         
         topPanel.add(titleLabel);
@@ -40,6 +60,7 @@ public class FileManagerUI {
         // Center section: List of files
         listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
+        listPanel.setBackground(Color.DARK_GRAY);
         JScrollPane scrollPane = new JScrollPane(listPanel);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         
@@ -69,26 +90,48 @@ public class FileManagerUI {
     public void refreshFileList() {
         listPanel.removeAll();
         
+        // Get screen dimensions for sizing
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int screenWidth = (int) screenSize.getWidth();
+        int itemHeight = 80; // Fixed height for each book item
+        
         List<AudioBookDB.AudioBook> files = getFiles();
         if (files.isEmpty()) {
             JPanel emptyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            emptyPanel.add(new JLabel("No PDFs uploaded yet. Click '+ Add PDF' to start."));
+            emptyPanel.setBackground(Color.DARK_GRAY);
+            JLabel emptyLabel = new JLabel("No PDFs uploaded yet. Click '+ Add PDF' to start.");
+            emptyLabel.setForeground(Color.WHITE);
+            emptyPanel.add(emptyLabel);
             listPanel.add(emptyPanel);
         } else {
             for (AudioBookDB.AudioBook book : files) {
                 JPanel itemPanel = new JPanel(new BorderLayout());
+                itemPanel.setBackground(Color.DARK_GRAY);
                 itemPanel.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY),
                     BorderFactory.createEmptyBorder(10, 10, 10, 10)
                 ));
+                itemPanel.setMaximumSize(new Dimension((int)(screenWidth * 0.99), itemHeight));
+                itemPanel.setPreferredSize(new Dimension((int)(screenWidth * 0.99), itemHeight));
                 
                 File f = new File(book.filePath);
                 JLabel nameLabel = new JLabel(f.getName());
                 nameLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+                nameLabel.setForeground(Color.WHITE);
                 
                 JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                btnPanel.setBackground(Color.DARK_GRAY);
                 JButton playBtn = new JButton("Open");
+                playBtn.setFocusPainted(true);
+                playBtn.setContentAreaFilled(true);
+                playBtn.setBackground(Color.RED);
+                playBtn.setForeground(Color.WHITE);
+                
                 JButton delBtn = new JButton("Delete");
+                delBtn.setFocusPainted(true);
+                delBtn.setContentAreaFilled(true);
+                delBtn.setBackground(Color.LIGHT_GRAY);
+                delBtn.setForeground(Color.BLACK);
                 
                 playBtn.addActionListener(e -> {
                     try {
