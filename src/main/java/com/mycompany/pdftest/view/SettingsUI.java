@@ -1,5 +1,6 @@
-package com.mycompany.pdftest;
+package com.mycompany.pdftest.view;
 
+import com.mycompany.pdftest.controller.AppController;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -18,17 +19,36 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
-import com.mycompany.pdftest.Settings.SettingsValues;
-import com.mycompany.pdftest.Settings.TtsModel;
+import com.mycompany.pdftest.model.Settings;
+import com.mycompany.pdftest.model.Settings.SettingsValues;
+import com.mycompany.pdftest.model.Settings.TtsModel;
 
 /**
  *
  * @author elimo
  */
 public class SettingsUI {
+    private JScrollPane settingsScrollPane;
 
+    // ==================== Constructor =======================
+    /**
+     * Creates a new SettingsUI instance with the settings panel
+     * @param settings the Settings model
+     * @param controller the AppController
+     */
+    public SettingsUI(Settings settings, AppController controller) {
+        this.settingsScrollPane = createSettingsGUIPanel(settings, controller);
+    }
 
-        // ==================== Safty Checks =======================
+    /**
+     * Get the settings panel as a scrollable pane
+     * @return JScrollPane containing the settings UI
+     */
+    public JScrollPane getSettingsPane() {
+        return settingsScrollPane;
+    }
+
+    // ==================== Safty Checks =======================
     private static boolean validateSettings(String ttsAddr, String modelName, String apiKey, String voicesString) {
         // Check if TTS URL is empty
         if (ttsAddr == null || ttsAddr.trim().isEmpty()) {
@@ -96,7 +116,7 @@ public class SettingsUI {
     private void addChunkReloadRang(GridBagConstraints gbc, JPanel settingsPanel, SettingsValues initialSettings) {
     }
 
-    static JScrollPane createSettingsGUI(Settings settings, AppController controller) {
+    private JScrollPane createSettingsGUIPanel(Settings settings, AppController controller) {
 
         SettingsValues initialSettings = settings.getSettingsValues();
         TtsModel initialModel = settings.getModel(initialSettings.TtsModel);

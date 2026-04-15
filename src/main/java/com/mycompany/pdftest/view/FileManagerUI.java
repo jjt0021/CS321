@@ -1,4 +1,4 @@
-package com.mycompany.pdftest;
+package com.mycompany.pdftest.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -19,6 +19,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import com.mycompany.pdftest.controller.AppController;
+import com.mycompany.pdftest.model.persistence.AudioBookDB;
 
 /**
  * Responsible for the GUI that allows users to manage their PDF files. 
@@ -105,6 +108,11 @@ public class FileManagerUI {
             listPanel.add(emptyPanel);
         } else {
             for (AudioBookDB.AudioBook book : files) {
+                // Skip entries with null file paths
+                if (book.filePath == null || book.filePath.trim().isEmpty()) {
+                    continue;
+                }
+                
                 JPanel itemPanel = new JPanel(new BorderLayout());
                 itemPanel.setBackground(Color.DARK_GRAY);
                 itemPanel.setBorder(BorderFactory.createCompoundBorder(

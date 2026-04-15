@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.mycompany.pdftest;
+package com.mycompany.pdftest.model.persistence;
 
 import java.io.File;
 import java.io.FileReader;
@@ -41,6 +41,14 @@ public class AudioBookDB {
         public List<String> bookMakredText = new ArrayList<>();
         public List<Integer> bookMarkID = new ArrayList<>();
 
+        /**
+         * No-arg constructor for Gson deserialization
+         * Note: This should not be used directly; use AudioBook(String filePath) instead
+         */
+        public AudioBook() {
+            this.filePath = null;
+        }
+
         public AudioBook (String filePath){
             this.filePath = filePath;
         }
@@ -62,6 +70,17 @@ public class AudioBookDB {
                 // In case the file is empty - Can happen if all audioBOoks are deleted
                 if (audioBooks == null) {
                     audioBooks = new ArrayList<>();
+                } else {
+                    // Filter out corrupted entries (those with null or empty filePath)
+                    List<AudioBook> validBooks = new ArrayList<>();
+                    for (AudioBook book : audioBooks) {
+                        if (book.filePath != null && !book.filePath.trim().isEmpty()) {
+                            validBooks.add(book);
+                        } else {
+                            System.err.println("Warning: Removing corrupted AudioBook entry with null filePath from database");
+                        }
+                    }
+                    audioBooks = validBooks;
                 }
             } catch (IOException e) {
                 System.err.println("Failed to read AudioBookDB file: " + e.getMessage());
@@ -82,13 +101,29 @@ public class AudioBookDB {
 
     public void save() {
         try (Writer writer = new FileWriter(db)) {
-            gson.toJson(audioBooks, writer);
+            // Filter out corrupted entries (those with null or empty filePath)
+            List<AudioBook> validBooks = new ArrayList<>();
+            for (AudioBook book : audioBooks) {
+                if (book.filePath != null && !book.filePath.trim().isEmpty()) {
+                    validBooks.add(book);
+                } else {
+                    System.err.println("Warning: Skipping corrupted AudioBook entry with null filePath");
+                }
+            }
+            // Save only valid entries
+            gson.toJson(validBooks, writer);
         } catch (IOException e) {
             throw new RuntimeException("Failed to save audiobooks", e);
         }
     }
 
     public void upDateCurrentChunk(String filePath, int currentChunk) {
+        // Validate filePath
+        if (filePath == null || filePath.trim().isEmpty()) {
+            System.err.println("Error: Cannot update current chunk with null or empty filePath");
+            return;
+        }
+        
         for (AudioBook book : audioBooks) {
             if (book.filePath.equals(filePath)) {
                 book.currentChunk = currentChunk;
@@ -102,6 +137,12 @@ public class AudioBookDB {
     }
 
     public void updateBookMarks(String filePath, int bookMarkID, String bookMarkText) {
+        // Validate filePath
+        if (filePath == null || filePath.trim().isEmpty()) {
+            System.err.println("Error: Cannot update bookmarks with null or empty filePath");
+            return;
+        }
+        
         for (AudioBook book : audioBooks) {
             if (book.filePath.equals(filePath)) {
                 book.bookMakredText.add(bookMarkText);
@@ -118,19 +159,33 @@ public class AudioBookDB {
     }
 
     public void addAudioBook(String filePath) {
+        // Validate filePath before adding
+        if (filePath == null || filePath.trim().isEmpty()) {
+            System.err.println("Error: Cannot add AudioBook with null or empty filePath");
+            return;
+        }
         audioBooks.add(new AudioBook(filePath));
     }
 
     public void removeAudioBook(String filePath) {
+        // Validate filePath
+        if (filePath == null || filePath.trim().isEmpty()) {
+            System.err.println("Error: Cannot remove AudioBook with null or empty filePath");
+            return;
+        }
+        
         AudioBook bookToRemove = null;
         for (AudioBook book : audioBooks) {
-            if (book.filePath.equals(filePath)) {
+            if (book.filePath != null && book.filePath.equals(filePath)) {
                 bookToRemove = book;
                 break;
             }
         }
         
         // We need to do this outside of the loop becuase you can not remove an object form a list while loop through it.
-        audioBooks.remove(bookToRemove);
+        if (bookToRemove != null) {
+            audioBooks.remove(bookToRemove);
+            save();
+        }
     }
 }

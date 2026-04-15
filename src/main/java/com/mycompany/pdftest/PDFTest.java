@@ -6,6 +6,8 @@ import java.io.IOException;
 
 import javax.swing.JFrame;
 
+import com.mycompany.pdftest.controller.AppController;
+
 /**
  *
  * @author elimo
@@ -22,17 +24,15 @@ public class PDFTest {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(width, height);
 
-        String pdfPath = "src/main/java/com/mycompany/pdftest/Challenges and Strategies for African American Women in Higher Ed _ Free Essay Example.pdf";
-        
         // ========== MVC Architecture ==========
         // Initialize the controller (main coordinator between Model and View)
         AppController appController = new AppController(frame);
         
-        // Initialize models with data
-        appController.initializeModels(pdfPath);
+        // Initialize views without loading a specific book
+        appController.initializeViewsWithoutBook();
         
-        // Initialize views
-        appController.initializeViews();
+        // Show the file manager so user can select a PDF
+        appController.showFileManagerView();
         
         // Show the application
         frame.setVisible(true);
@@ -62,4 +62,5 @@ It would be nice to implement this, but might be way too difficult.
 // p.y += 100;   // move down 50 pixels
 // viewport.setViewPosition(p);
 
+// Way to difficult and not workth it at all.
 **/

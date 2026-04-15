@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.mycompany.pdftest;
+package com.mycompany.pdftest.model.audio;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,6 +84,14 @@ public class Audio {
         return (currentState == AudioState.GENERATING);
     }
 
+    /**
+     * Get the current audio state
+     * @return the current AudioState
+     */
+    public AudioState getCurrentState() {
+        return currentState;
+    }
+
     public void requestAudio() {
         // This will be where we request audio.
         System.out.println("[Audio] *** requestAudio() START for chunk " + chunk + " ***");
@@ -137,7 +145,7 @@ public class Audio {
                             }
 
                             System.out.println("[Audio] Response successful, received " + response.body().length + " bytes");
-                            Path outputPath = Paths.get(String.format("book_%s_chunk_%d.wav", bookName, chunk));
+                            Path outputPath = Paths.get("audio_cache", String.format("book_%s_chunk_%d.wav", bookName, chunk));
                             Files.write(outputPath, response.body());
                             setFileURL(outputPath.toString());
                             currentState = AudioState.READY;

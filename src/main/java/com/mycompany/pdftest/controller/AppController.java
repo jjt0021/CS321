@@ -1,7 +1,7 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  */
-package com.mycompany.pdftest;
+package com.mycompany.pdftest.controller;
 
 import java.awt.CardLayout;
 import java.io.File;
@@ -13,7 +13,14 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import com.mycompany.pdftest.Settings.SettingsValues;
+import com.mycompany.pdftest.model.PlayState;
+import com.mycompany.pdftest.model.Settings;
+import com.mycompany.pdftest.model.Settings.SettingsValues;
+import com.mycompany.pdftest.model.persistence.AudioBookDB;
+import com.mycompany.pdftest.util.TextUtils;
+import com.mycompany.pdftest.view.BookUI;
+import com.mycompany.pdftest.view.FileManagerUI;
+import com.mycompany.pdftest.view.SettingsUI;
 
 /**
 This class is the controller, it was added to more closly mirror the mvc model.
@@ -33,6 +40,7 @@ public class AppController {
     private BookUI bookUIView;
     private JLayeredPane bookUIPane;
     private JScrollPane settingsUIPane;
+    private FileManagerUI fileManagerUIView;
     
     // UI Components
     private CardLayout cardLayout;
@@ -93,7 +101,70 @@ public class AppController {
         );
     }
     /**
-     * Initialize views and set up the UI
+     * Initialize models without loading a specific product yet
+     */
+    private void initializeModelsEmpty() throws IOException {
+        // Load settings model
+        settingsModel = new Settings();
+        SettingsValues initialSettings = settingsModel.getSettingsValues();
+        
+        // Load audio book database model
+        audioBookDBModel = new AudioBookDB();
+        
+        // Initialize empty data structures
+        currentBook = new ArrayList<>();
+        currentBookPath = null;
+        currentBookName = null;
+        
+        // Initialize play state model with empty book
+        playStateModel = new PlayState(
+            0,                                                  // chunk 0
+            currentBook,                                        // empty list
+            initialSettings.loadedRange,                        
+            initialSettings.reloadRange,                        
+            initialSettings.cacheSize,                          
+            "No Book Selected",
+            settingsModel.getModel(initialSettings.TtsModel),   
+            initialSettings.voice
+        );
+    }
+
+    /**
+     * Initialize views without loading a specific book
+     * This is called on startup, user will select a book from file manager
+     */
+    public void initializeViewsWithoutBook() throws IOException {
+        // Initialize models first (empty state)
+        initializeModelsEmpty();
+        
+        // Create file manager view first
+        fileManagerUIView = new FileManagerUI(this, audioBookDBModel);
+        fileManagerUIPane = fileManagerUIView.makeGUI();
+        
+        // Create book UI view (with empty models)
+        bookUIView = new BookUI(playStateModel, settingsModel);
+        bookUIPane = bookUIView.makePane(frame, playStateModel, this);
+        
+        // Set up listener for chunk changes during auto-advance
+        playStateModel.setOnChunkChangedListener(newChunk -> {
+            bookUIView.highlightCurrentChunk(newChunk);
+        });
+        
+        // Create settings UI view
+        SettingsUI settingsUI = new SettingsUI(settingsModel, this);
+        settingsUIPane = settingsUI.getSettingsPane();
+        
+        // Set up card layout for screen switching
+        screens.add(fileManagerUIPane, "FileManager");
+        screens.add(settingsUIPane, "Settings");
+        screens.add(bookUIPane, "audioBook");
+        
+        frame.setContentPane(screens);
+    }
+
+    /**
+     * Initialize views with a specific book loaded
+     * This is the old method, kept for backward compatibility
      */
     public void initializeViews() throws IOException {
         // Create file manager view first
@@ -110,7 +181,8 @@ public class AppController {
         });
         
         // Create settings UI view
-        settingsUIPane = SettingsUI.createSettingsGUI(settingsModel, this);
+        SettingsUI settingsUI = new SettingsUI(settingsModel, this);
+        settingsUIPane = settingsUI.getSettingsPane();
         
         // Set up card layout for screen switching
         screens.add(fileManagerUIPane, "FileManager");
@@ -155,13 +227,50 @@ public class AppController {
      * Safely loads a new book and refreshes the UI
      */
     public void openBook(String filePath) throws IOException {
+        // Check if file exists before trying to open it
+        File pdfFile = new File(filePath);
+        if (!pdfFile.exists()) {
+            // File not found - remove from database
+            audioBookDBModel.removeAudioBook(filePath);
+            audioBookDBModel.save();
+            
+            // Refresh file manager display
+            if (fileManagerUIView != null) {
+                fileManagerUIView.refreshFileList();
+            }
+            
+            // Notify user
+            javax.swing.JOptionPane.showMessageDialog(
+                null,
+                "The PDF file could not be found:\n" + filePath + "\n\nIt has been removed from your library.",
+                "File Not Found",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            
+            // Show file manager again
+            showFileManagerView();
+            return;
+        }
+        
         // Save progress of the current book before switching
         if (currentBookPath != null) {
             saveBookProgress();
         }
 
-        // Initialize models with the new PDF data
-        initializeModels(filePath);
+        try {
+            // Initialize models with the new PDF data
+            initializeModels(filePath);
+        } catch (IOException e) {
+            // If loading fails, show error and return to file manager
+            javax.swing.JOptionPane.showMessageDialog(
+                null,
+                "Error loading PDF file:\n" + e.getMessage(),
+                "Error Loading File",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+            showFileManagerView();
+            throw e;
+        }
 
         // Remove the old book pane from the CardLayout to prevent stacking
         if (bookUIPane != null) {
@@ -196,9 +305,24 @@ public class AppController {
      * @param chunkNum The chunk number selected by user
      */
     public void onChunkSelected(int chunkNum) {
-        // Stop current playback before switching chunks
-        playStateModel.stopCurrentPlayback();
+        // Check if audio is currently playing
+        boolean wasPlaying = playStateModel.getPlayState();
         
+        // If playing, fully stop the current audio (close it, don't just pause)
+        if (wasPlaying) {
+            playStateModel.setPlayState(false);  // Pause first
+            playStateModel.stopCurrentPlayback();  // Fully close the clip
+            System.out.println("Stopped playback of current chunk before switching");
+            
+            // Give the audio system time to release the old clip
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        
+        // Change to the new chunk
         playStateModel.setCurrentChunk(chunkNum);
         System.out.println("Current chunk updated to " + chunkNum);
         
@@ -209,6 +333,12 @@ public class AppController {
         if (playStateModel.reloadCheck()) {
             bookUIView.updateScrollPane(playStateModel.reloadChunks());
         }
+        
+        // Resume playing if it was playing before
+        if (wasPlaying) {
+            playStateModel.setPlayState(true);  // Resume with new chunk
+            System.out.println("Resumed playback at new chunk " + chunkNum);
+        }
     }
 
     /**
@@ -217,7 +347,47 @@ public class AppController {
      */
     public void onPlayStateChanged(boolean shouldPlay) {
         playStateModel.setPlayState(shouldPlay);
-        System.out.println("Play state changed");
+        System.out.println("Play state changed to: " + shouldPlay);
+        
+        // Update play button text to reflect new state
+        if (bookUIView != null) {
+            bookUIView.updatePlayButtonState(shouldPlay);
+            bookUIView.updateChunkStatusIndicators();
+        }
+        
+        // If starting playback, start a refresh thread
+        if (shouldPlay) {
+            startIndicatorRefreshThread();
+        }
+    }
+    
+    /**
+     * Start a background thread to refresh status indicators periodically
+     * This updates the UI to show real-time audio generation and playback state
+     */
+    private void startIndicatorRefreshThread() {
+        new Thread(() -> {
+            while (playStateModel.getPlayState()) {
+                try {
+                    Thread.sleep(500);  // Refresh every 500ms
+                    if (bookUIView != null && playStateModel.getPlayState()) {
+                        bookUIView.updateChunkStatusIndicators();
+                    }
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }).start();
+    }
+    
+    /**
+     * Refresh status indicators on demand
+     * Call this when you need to update the UI immediately
+     */
+    public void refreshStatusIndicators() {
+        if (bookUIView != null) {
+            bookUIView.updateChunkStatusIndicators();
+        }
     }
 
     // =========== Handels Saving Settings ================
@@ -312,5 +482,41 @@ public class AppController {
      */
     public JFrame getFrame() {
         return frame;
+    }
+
+    /**
+     * Handle bookmark creation
+     * @param chunkNum The chunk number to bookmark
+     * @param note The bookmark note/description
+     */
+    public void onBookmarkCreated(int chunkNum, String note) {
+        audioBookDBModel.updateBookMarks(currentBookPath, chunkNum, note);
+        System.out.println("Bookmark created at chunk " + chunkNum + ": " + note);
+    }
+
+    /**
+     * Get all bookmark chunk numbers for current book
+     * @return List of bookmark chunk numbers
+     */
+    public java.util.List<Integer> getBookmarkChunks() {
+        for (AudioBookDB.AudioBook book : audioBookDBModel.getAudioBooks()) {
+            if (book.filePath.equals(currentBookPath)) {
+                return book.bookMarkID;
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * Get all bookmark notes for current book
+     * @return List of bookmark notes
+     */
+    public java.util.List<String> getBookmarkNotes() {
+        for (AudioBookDB.AudioBook book : audioBookDBModel.getAudioBooks()) {
+            if (book.filePath.equals(currentBookPath)) {
+                return book.bookMakredText;
+            }
+        }
+        return new ArrayList<>();
     }
 }

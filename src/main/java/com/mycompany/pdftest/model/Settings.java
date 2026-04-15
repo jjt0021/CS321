@@ -8,7 +8,7 @@ It would have been easier to map the model name to the model object. If some one
 wants they can implement it that way.
 
 **/
-package com.mycompany.pdftest;
+package com.mycompany.pdftest.model;
 
 import java.io.File;
 import java.io.FileReader;
@@ -137,8 +137,7 @@ public class Settings {
         return new TtsModel();
     }
 
-    // This needs save gaurds, so the user can not input bad values.
-    // Those safe gaurds will be in Settings GUI.
+    // The safe gaurds or this are the the SettingsUI.java
     public void save() {
         System.out.println("Save atemped");
         try (Writer writer = new FileWriter(settingsFile)) {
@@ -151,7 +150,6 @@ public class Settings {
         }
     }
 
-    // Need to change to real settings file getter. Right now it is still like AudioBookDB
     private void load() {
 
         // In case there is no file
@@ -176,7 +174,7 @@ public class Settings {
             settings = new SettingsValues();
         }
         
-        // Ensure ttsModelList is initialized (handles JSON deserialization mismatches)
+        // In case there are no models.
         if (settings.ttsModelList == null) {
             settings.ttsModelList = new ArrayList<>();
         }

@@ -1,4 +1,4 @@
-package com.mycompany.pdftest;
+package com.mycompany.pdftest.model;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +15,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.mycompany.pdftest.Settings.TtsModel;
+import com.mycompany.pdftest.model.Settings.TtsModel;
+import com.mycompany.pdftest.model.audio.Audio;
 
 
 /*
@@ -173,6 +174,12 @@ public class PlayState implements Audio.PlaybackListener {
             return;
         }
         
+        // IMPORTANT: Never generate chunks in the past - only current and future chunks
+        if (chunkIndex < currentChunk) {
+            System.out.println("[PlayState.Prefetch] Skipping generation for past chunk " + chunkIndex + " (current: " + currentChunk + ")");
+            return;
+        }
+        
         Audio audio = cachedWindow.get(chunkIndex);
         
         // Skip if already generated (has file URL)
@@ -327,16 +334,30 @@ public class PlayState implements Audio.PlaybackListener {
                 audio.resumeAudio();
             }
         } else {
+            // When pausing, completely stop and close the current audio clip
             Audio audio = cachedWindow.get(currentChunk);
             if (audio != null) {
-                audio.pauseAudio();
+                audio.pauseAudio();  // This pauses and saves position
+                // Note: full stop/close happens in stopCurrentPlayback() if needed
             }
-
         }
     }
 
     public boolean getPlayState() {
         return isPlaying;
+    }
+
+    /**
+     * Get the audio state for a specific chunk
+     * @param chunkNum the chunk number to check
+     * @return the AudioState enum value (MISSING, GENERATING, READY, PLAYING, PAUSED, STOPPED, FAILED)
+     */
+    public Audio.AudioState getAudioState(int chunkNum) {
+        Audio audio = cachedWindow.get(chunkNum);
+        if (audio == null) {
+            return Audio.AudioState.MISSING;
+        }
+        return audio.getCurrentState();
     }
 
     /**
