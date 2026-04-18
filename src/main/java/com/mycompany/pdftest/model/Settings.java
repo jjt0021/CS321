@@ -3,11 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 
-/*
-It would have been easier to map the model name to the model object. If some one 
-wants they can implement it that way.
 
-**/
 package com.mycompany.pdftest.model;
 
 import java.io.File;
@@ -25,9 +21,9 @@ import com.google.gson.annotations.SerializedName;
 
 /**
  *
- * @author elimo
+ * This classes job is the save and retrive settings.
+ * Most of the vlaues given are validated else in the FilmaMangerUI before it reaches this class.
  */
-// This classes job is to save load and update a settings file.
 public class Settings {
 
     private final File settingsFile = new File("Settings.json");// This should not change, but stll makes it easier to change if we decide to have a different dir for steaming and file exporation.
@@ -56,6 +52,13 @@ public class Settings {
         this.settings = settings;
     }
 
+    /**
+     * This class is used to save the values for different text to speach models such as
+     *  - the URL for the api
+     *  - The list of voices avalible to the model
+     *  - The model Name
+     *  - The apiKey (if needed)
+     */
     public class TtsModel {
 
         public String URL = "https://api.openai.com/v1/audio/speech";
@@ -64,6 +67,10 @@ public class Settings {
         public String apiKey = "";
     }
 
+    /**
+     * This is the class that holds the values that will be saved to the json file
+     * This class is the one that gets passed to all of the others
+     */
     public class SettingsValues {
 
         public boolean showProgressBar = true;
@@ -77,6 +84,10 @@ public class Settings {
 
     }
 
+    /**
+     * These next methods mainly deel with finding specific models and vlaues for those models.
+     * @return
+     */
     public List<String> modelNameList() {
         List<String> modelNameList = new ArrayList<>();
         for (TtsModel model : settings.ttsModelList) {
@@ -150,6 +161,10 @@ public class Settings {
         }
     }
 
+    /**
+     * This method handles loading the settings form the json file, or creating a default file
+     * if it does not exits.
+     */
     private void load() {
 
         // In case there is no file

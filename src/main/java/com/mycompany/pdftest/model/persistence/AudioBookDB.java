@@ -22,10 +22,11 @@ import com.google.gson.reflect.TypeToken;
  *
  * @author elimo
  */
-/*
-You should upload and downlaod a list of objects
-The data base will store the path to different books, bookmarks, and currentchunks
-**/
+/**
+ * The Class handels saving and loading the audio book Database
+ * The data base is saved using jason and uses the gson libary to save and retrive data
+ * 
+ */
 public class AudioBookDB {
 
     private final File db = new File("AudioBookDB.json");// This should not change, but stll makes it easier to change if we decide to have a different dir for steaming and file exporation.
@@ -42,7 +43,7 @@ public class AudioBookDB {
         public List<Integer> bookMarkID = new ArrayList<>();
 
         /**
-         * No-arg constructor for Gson deserialization
+         * Constructor for Gson deserialization
          * Note: This should not be used directly; use AudioBook(String filePath) instead
          */
         public AudioBook() {
@@ -59,6 +60,9 @@ public class AudioBookDB {
         load();
     }
 
+    /**
+     * This checks if the data base exists and loads it if it does and creates it if it does not.
+     */
     private void load() {
 
         // In case there is no file
@@ -99,6 +103,7 @@ public class AudioBookDB {
         return audioBooks;
     }
 
+
     public void save() {
         try (Writer writer = new FileWriter(db)) {
             // Filter out corrupted entries (those with null or empty filePath)
@@ -117,6 +122,12 @@ public class AudioBookDB {
         }
     }
 
+    /**
+     * This updates only the current chunk in the audio book DB.
+     * 
+     * @param filePath
+     * @param currentChunk
+     */
     public void upDateCurrentChunk(String filePath, int currentChunk) {
         // Validate filePath
         if (filePath == null || filePath.trim().isEmpty()) {
@@ -136,6 +147,12 @@ public class AudioBookDB {
         save();
     }
 
+    /**
+     * This is used to update a book mark, The text should either be a note or the chunk being bookmarked
+     * @param filePath
+     * @param bookMarkID
+     * @param bookMarkText
+     */
     public void updateBookMarks(String filePath, int bookMarkID, String bookMarkText) {
         // Validate filePath
         if (filePath == null || filePath.trim().isEmpty()) {
@@ -158,6 +175,7 @@ public class AudioBookDB {
 
     }
 
+    
     public void addAudioBook(String filePath) {
         // Validate filePath before adding
         if (filePath == null || filePath.trim().isEmpty()) {

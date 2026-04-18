@@ -29,8 +29,10 @@ import com.mycompany.pdftest.model.audio.Audio;
  */
 
 
-//TODO need to add a the check for it it is fialed, generating or generated.
-//This classes job keeps track of the current chunk, checks if a reload is needed for the gui, and keeps track of if the playback is true
+/**
+* This classes job keeps track of the current chunk, checks if a reload is needed for the gui, 
+* and keeps track the play pause state.
+ */
 public class PlayState implements Audio.PlaybackListener {
 
     /**
@@ -66,6 +68,17 @@ public class PlayState implements Audio.PlaybackListener {
     private String bookName;
     private String voice;
 
+    /**
+     * These needs to be all values gotten from the settings file
+     * @param currentChunk
+     * @param fullBook
+     * @param loadedRange
+     * @param reloadRange
+     * @param cacheSize
+     * @param bookName
+     * @param initialModel
+     * @param voice
+     */
     public PlayState(int currentChunk, ArrayList<String> fullBook, int loadedRange, int reloadRange, int cacheSize, String bookName, TtsModel initialModel, String voice) {
         this.loadedRange = loadedRange;
         this.reloadRange = reloadRange;
@@ -373,6 +386,10 @@ public class PlayState implements Audio.PlaybackListener {
      * Implements Audio.PlaybackListener interface
      */
     @Override
+    /** 
+     * This handles auto playing the next chunk, updating the current chunk the the audio book
+     * DB and changes the listener stae.
+    */
     public void onChunkFinished(int chunkNumber) {
         System.out.println("[PlayState.onChunkFinished] Chunk " + chunkNumber + " finished, isPlaying=" + isPlaying);
         
@@ -456,8 +473,7 @@ public class PlayState implements Audio.PlaybackListener {
     }
 
     /**
-     * Called when a playback error occurs
-     * Implements Audio.PlaybackListener interface
+     * This is for when play back errors occure.
      */
     @Override
     public void onPlaybackError(String errorMessage) {
@@ -467,7 +483,7 @@ public class PlayState implements Audio.PlaybackListener {
     }
 
     /**
-     * Stop current chunk playback before switching chunks
+     * this stops current chunk playback before switching chunks
      */
     public void stopCurrentPlayback() {
         System.out.println("[PlayState] stopCurrentPlayback() called for chunk " + currentChunk);

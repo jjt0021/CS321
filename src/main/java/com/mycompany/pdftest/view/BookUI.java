@@ -29,7 +29,8 @@ import com.mycompany.pdftest.model.Settings.SettingsValues;
 
 /**
  *
- * @author elimo
+ * @author elimo This classes job is to manage the UI for listening to audio
+ * books.
  */
 public class BookUI {
 
@@ -44,7 +45,6 @@ public class BookUI {
     private Map<Integer, JButton> chunkButtons = new HashMap<>();
     private JButton playButton;  // Store reference to play button for dynamic updates
 
-    // TODO: load models.
     public BookUI(PlayState playState, Settings settingsObject) {
         this.playState = playState;
         this.settingsObject = settingsObject;
@@ -52,9 +52,10 @@ public class BookUI {
         this.controller = null;
 
     }
-    
+
     /**
-     * Sets the controller reference for MVC communication
+     * This set the controller reference for communication
+     *
      * @param controller the AppController instance
      */
     public void setController(AppController controller) {
@@ -79,14 +80,14 @@ public class BookUI {
         // This makes all of the buttons and adds them to the scroll pane.
         for (int i = 0; i < window.size(); i++) {
             // I had a bug where I forgot to add startChunk to i resulting it not reloading properly.
-            // ChatGPT added these line
+            // ChatGPT added these lines
             int absoluteIndex = playState.getStartChunk() + i;
-            
+
             // Get audio state for this chunk
             com.mycompany.pdftest.model.audio.Audio.AudioState audioState = playState.getAudioState(absoluteIndex);
             String statusIndicator = getStatusIndicator(audioState);
             String buttonText = "<html><div align='left'>" + statusIndicator + " " + window.get(i) + "</div></html>";
-            
+
             JButton button = new JButton(buttonText);
             button.putClientProperty("chunkNum", absoluteIndex);
             button.putClientProperty("chunkText", window.get(i));  // Store original text for updates
@@ -96,13 +97,13 @@ public class BookUI {
             button.setContentAreaFilled(false);
             button.setHorizontalAlignment(SwingConstants.LEFT);
             button.setMaximumSize(new Dimension((int) (width * 0.99), 1000));
-            
+
             // Set button color based on audio state
             button.setForeground(getStatusColor(audioState));
 
             button.addActionListener(e -> {
                 int chunkNum = (int) ((JButton) e.getSource()).getClientProperty("chunkNum");
-                
+
                 // Use controller to handle chunk selection (MVC pattern)
                 if (controller != null) {
                     controller.onChunkSelected(chunkNum);
@@ -137,19 +138,19 @@ public class BookUI {
     }
 
     /**
-     * Update the scroll pane with new content (called by Controller)
-     * This separates view updates from direct model access
+     * Update the scroll pane with new content (called by Controller) This
+     * separates view updates from direct model access
+     *
      * @param window the new text chunks to display
      */
     public void updateScrollPane(ArrayList<String> window) {
         makeScrollPane(window, playState);
         highlightCurrentChunk(playState.getCurrentChunk());
     }
-    
+
     /**
-     * Get status indicator emoji based on audio state
-     * @param state the AudioState
-     * @return emoji indicator
+     * This get the staus indicater, so the user has some idea what is happening
+     * with the http reqest for audio
      */
     private String getStatusIndicator(com.mycompany.pdftest.model.audio.Audio.AudioState state) {
         switch (state) {
@@ -173,7 +174,11 @@ public class BookUI {
     }
 
     /**
-     * Get color based on audio state
+     * This handels the highlighting color of the text. It does not handle
+     * highlighting the current chunk, but it does handle the highlight color
+     * for telling the user if the text is generated and/or has been listened
+     * to.
+     *
      * @param state the AudioState
      * @return Color for display
      */
@@ -197,6 +202,7 @@ public class BookUI {
                 return Color.WHITE;
         }
     }
+
     public void highlightCurrentChunk(int currentChunkNum) {
         // Unhighlight all buttons
         for (JButton button : chunkButtons.values()) {
@@ -204,7 +210,7 @@ public class BookUI {
             button.setContentAreaFilled(false);
             button.setForeground(Color.WHITE);
         }
-        
+
         // Highlight the current chunk button
         if (chunkButtons.containsKey(currentChunkNum)) {
             JButton currentButton = chunkButtons.get(currentChunkNum);
@@ -215,32 +221,32 @@ public class BookUI {
     }
 
     /**
-     * Bookmark the current chunk
+     * This handles bookmarking the current chunk
      */
     public void bookmarkCurrentChunk() {
         int currentChunk = playState.getCurrentChunk();
         String bookmarkNote = JOptionPane.showInputDialog(
-            null,
-            "Enter a note for this bookmark:",
-            "Bookmark Chunk " + currentChunk,
-            JOptionPane.PLAIN_MESSAGE
+                null,
+                "Enter a note for this bookmark:",
+                "Bookmark Chunk " + currentChunk,
+                JOptionPane.PLAIN_MESSAGE
         );
-        
+
         if (bookmarkNote != null && !bookmarkNote.trim().isEmpty()) {
             if (controller != null) {
                 controller.onBookmarkCreated(currentChunk, bookmarkNote);
             }
             JOptionPane.showMessageDialog(
-                null,
-                "Bookmark created at chunk " + currentChunk,
-                "Bookmark Added",
-                JOptionPane.INFORMATION_MESSAGE
+                    null,
+                    "Bookmark created at chunk " + currentChunk,
+                    "Bookmark Added",
+                    JOptionPane.INFORMATION_MESSAGE
             );
         }
     }
 
     /**
-     * Show all bookmarks in a dialog and allow jumping to them
+     * This shows the bookmarks and allows the users to jump to them.
      */
     public void showBookmarks() {
         if (controller == null) {
@@ -254,10 +260,10 @@ public class BookUI {
 
         if (bookmarkChunks == null || bookmarkChunks.isEmpty()) {
             JOptionPane.showMessageDialog(
-                null,
-                "No bookmarks found",
-                "Bookmarks",
-                JOptionPane.INFORMATION_MESSAGE
+                    null,
+                    "No bookmarks found",
+                    "Bookmarks",
+                    JOptionPane.INFORMATION_MESSAGE
             );
             return;
         }
@@ -276,7 +282,7 @@ public class BookUI {
         for (int i = 0; i < bookmarkChunks.size(); i++) {
             int chunkNum = bookmarkChunks.get(i);
             String note = (bookmarkNotes != null && i < bookmarkNotes.size()) ? bookmarkNotes.get(i) : "No note";
-            
+
             JButton bookmarkBtn = new JButton("Chunk " + chunkNum + ": " + note);
             bookmarkBtn.setFocusPainted(false);
             bookmarkBtn.setContentAreaFilled(true);
@@ -289,18 +295,18 @@ public class BookUI {
             bookmarkBtn.addActionListener(e -> {
                 // Set current chunk to bookmark
                 playState.setCurrentChunk(finalChunkNum);
-                
+
                 // Check if view needs to be reloaded
                 if (playState.reloadCheck()) {
                     updateScrollPane(playState.reloadChunks());
                 }
-                
+
                 // Highlight the bookmarked chunk
                 highlightCurrentChunk(finalChunkNum);
-                
+
                 // Close the bookmark dialog
                 bookmarkDialog.dispose();
-                
+
                 System.out.println("Jumped to bookmarked chunk: " + finalChunkNum);
             });
 
@@ -314,18 +320,24 @@ public class BookUI {
         bookmarkDialog.setVisible(true);
     }
 
-  
-
+    /**
+     * This handles most of the GUI creation
+     *
+     * @param frame
+     * @param playstate
+     * @param controller
+     * @return
+     * @throws IOException
+     */
     public JLayeredPane makePane(JFrame frame, PlayState playstate, AppController controller) throws IOException {
         // Set controller reference for MVC communication
         setController(controller);
 
         // Call the method directly without wrapping it in a new JScrollPane
         JScrollPane localScrollPane = makeScrollPane(playstate.reloadChunks(), playstate);
-        
+
         // Highlight the current chunk on initial load
         highlightCurrentChunk(playstate.getCurrentChunk());
-
 
         // ========== Top Navigation Buttons ==========
         JButton closeButton = new JButton("X");
@@ -335,7 +347,7 @@ public class BookUI {
         closeButton.setForeground(Color.BLACK);
         closeButton.setFont(closeButton.getFont().deriveFont(14f));
         closeButton.setToolTipText("Back to File Manager");
-        
+
         closeButton.addActionListener(e -> {
             if (controller != null) {
                 controller.showFileManagerView();
@@ -348,7 +360,7 @@ public class BookUI {
         settingsButton.setBackground(Color.LIGHT_GRAY);
         settingsButton.setForeground(Color.BLACK);
         settingsButton.setToolTipText("Open Settings");
-        
+
         settingsButton.addActionListener(e -> {
             if (controller != null) {
                 controller.showSettingsView();
@@ -361,7 +373,7 @@ public class BookUI {
         bookmarkCurrentButton.setBackground(Color.LIGHT_GRAY);
         bookmarkCurrentButton.setForeground(Color.BLACK);
         bookmarkCurrentButton.setToolTipText("Bookmark Current Chunk");
-        
+
         bookmarkCurrentButton.addActionListener(e -> {
             bookmarkCurrentChunk();
         });
@@ -372,18 +384,24 @@ public class BookUI {
         showBookmarksButton.setBackground(Color.LIGHT_GRAY);
         showBookmarksButton.setForeground(Color.BLACK);
         showBookmarksButton.setToolTipText("View All Bookmarks");
-        
+
         showBookmarksButton.addActionListener(e -> {
             showBookmarks();
         });
 
-        // ============== Bottom navigation Buttons =================
+        /**
+         * ============== Bottom navigation Buttons ================= These
+         * handel the bottom navigation buttons, which mostly have to do with
+         * the TTS models
+         *
+         *
+         */
         // This section is for all of the action buttons like play pause etc.
         playButton = new JButton(updatePlayButtonText(playstate.getPlayState()));
         playButton.setFocusPainted(true);
-        playButton.setContentAreaFilled(true); 
+        playButton.setContentAreaFilled(true);
         playButton.setBackground(Color.red);
-        
+
         // Add play button action listener using controller
         playButton.addActionListener(e -> {
             if (controller != null) {
@@ -399,12 +417,12 @@ public class BookUI {
         // FIXED: Corrected the variable names for prev and skip buttons
         JButton prevChunk = new JButton("PREV");
         prevChunk.setFocusPainted(true);
-        prevChunk.setContentAreaFilled(true); 
+        prevChunk.setContentAreaFilled(true);
         prevChunk.setBackground(Color.red);
 
         JButton skipChunk = new JButton("SKIP");
         skipChunk.setFocusPainted(true);
-        skipChunk.setContentAreaFilled(true); 
+        skipChunk.setContentAreaFilled(true);
         skipChunk.setBackground(Color.red);
 
         JLayeredPane layerWindow = new JLayeredPane();
@@ -422,9 +440,12 @@ public class BookUI {
         Runnable updateLayout = () -> {
             int w = frame.getContentPane().getWidth();
             int h = frame.getContentPane().getHeight();
-            
+
             // Fallback just in case the frame hasn't rendered its dimensions yet
-            if (w == 0 || h == 0) { w = 800; h = 600; }
+            if (w == 0 || h == 0) {
+                w = 800;
+                h = 600;
+            }
 
             layerWindow.setBounds(0, 0, w, h);
             localScrollPane.setBounds(0, 0, w, h);
@@ -433,21 +454,21 @@ public class BookUI {
             int topBtnWidth = (int) (w * 0.08);
             int topBtnHeight = (int) (h * 0.05);
             int topPadding = 10;
-            
+
             closeButton.setBounds(topPadding, topPadding, topBtnWidth, topBtnHeight);
-            
+
             // Stack buttons on the right side
             int rightBtnWidth = (int) (w * 0.15);
             int rightBtnHeight = (int) (h * 0.04);
             int rightX = w - rightBtnWidth - topPadding;
             int topY = topPadding;
-            
+
             settingsButton.setBounds(rightX, topY, rightBtnWidth, rightBtnHeight);
             topY += rightBtnHeight + 5;
-            
+
             bookmarkCurrentButton.setBounds(rightX, topY, rightBtnWidth, rightBtnHeight);
             topY += rightBtnHeight + 5;
-            
+
             showBookmarksButton.setBounds(rightX, topY, rightBtnWidth, rightBtnHeight);
 
             // Bottom button dimensions
@@ -467,7 +488,7 @@ public class BookUI {
             public void componentResized(java.awt.event.ComponentEvent e) {
                 updateLayout.run();
             }
-            
+
             @Override
             public void componentShown(java.awt.event.ComponentEvent e) {
                 // Triggers the exact moment CardLayout brings this pane to the front
@@ -480,6 +501,7 @@ public class BookUI {
 
     /**
      * Update the play button text based on the current play state
+     *
      * @param isPlaying true if currently playing
      * @return the button text
      */
@@ -488,33 +510,34 @@ public class BookUI {
     }
 
     /**
-     * Refresh status indicators for all visible chunks
-     * Called when audio states change to show real-time updates
+     * Refresh status indicators for all visible chunks Called when audio states
+     * change to show real-time updates
      */
     public void updateChunkStatusIndicators() {
         for (Map.Entry<Integer, JButton> entry : chunkButtons.entrySet()) {
             int chunkNum = entry.getKey();
             JButton button = entry.getValue();
-            
+
             // Get the original text content stored in the button
             String textContent = (String) button.getClientProperty("chunkText");
             if (textContent == null) {
                 textContent = "";
             }
-            
+
             // Get the current audio state for this chunk
             com.mycompany.pdftest.model.audio.Audio.AudioState audioState = playState.getAudioState(chunkNum);
             String statusIndicator = getStatusIndicator(audioState);
-            
+
             // Create new button text with updated indicator
             String newButtonText = "<html><div align='left'>" + statusIndicator + " " + textContent + "</div></html>";
             button.setText(newButtonText);
             button.setForeground(getStatusColor(audioState));
         }
     }
-    
+
     /**
      * Update the play/pause button text based on current play state
+     *
      * @param isPlaying true if currently playing
      */
     public void updatePlayButtonState(boolean isPlaying) {

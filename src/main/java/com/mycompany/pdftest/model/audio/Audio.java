@@ -31,8 +31,8 @@ import com.google.gson.JsonObject;
 public class Audio {
 
     /**
-     * Listener interface for audio playback completion events
-     * Allows Audio to notify PlayState when a chunk finishes playing
+     * This is the interface that lets teh controller know when a chunk is finished playing
+     * It is usfull in playState so when a chunk is finished it can move to the next.
      */
     public interface PlaybackListener {
         void onChunkFinished(int chunkNumber);
@@ -41,6 +41,10 @@ public class Audio {
     
     private PlaybackListener playbackListener;
 
+    /**
+     * This enum is used to keep track of the state of the http request for the audio.
+     * It lets the other sections know if it is ready to play, or if it is still generating, or has failed
+     */
     public enum AudioState {
         MISSING,
         GENERATING,
@@ -105,7 +109,8 @@ public class Audio {
         System.out.flush();
         HttpClient client = HttpClient.newHttpClient();
 
-        //Chat-GPT edited thsie lines. There were some issues with json formating.
+        //Chat-GPT edited these lines. There were some issues with json formating.
+        // It made some slight changes to fix the issue.
         // Build JSON using GSON to properly escape special characters in the text
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("model", model);
@@ -175,14 +180,14 @@ public class Audio {
     }
 
     /**
-     * Check if the audio clip is valid and can be used
+     * This check if the audio is valid and can plya
      */
     public boolean isClipValid() {
         return clip != null && clip.isOpen();
     }
 
     /**
-     * Stop audio playback and close the clip
+     * This stops audio playback and close the clip
      */
     public void stopAudio() {
         System.out.println("[Audio] stopAudio() called for chunk " + chunk);
@@ -197,7 +202,7 @@ public class Audio {
     }
 
     /**
-     * Set the playback listener for completion notifications
+     * This set the playback listener which is used to let others know the audio state
      */
     public void setPlaybackListener(PlaybackListener listener) {
         this.playbackListener = listener;
