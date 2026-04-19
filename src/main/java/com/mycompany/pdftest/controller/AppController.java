@@ -23,8 +23,7 @@ import com.mycompany.pdftest.view.FileManagerUI;
 import com.mycompany.pdftest.view.SettingsUI;
 
 /**
-This class is the controller, it was added to more closly mirror the mvc model.
-That is why this class was added.
+This class is the controller, it was added to more closely mirror the MVC model.
  */
 public class AppController {
 
@@ -59,9 +58,12 @@ public class AppController {
     }
 
     /**
-     * Initialize models and load application data
+     * Initialize models and load application data.
      * @param pdfPath Path to the PDF file to load
      * @throws IOException if PDF loading fails
+     * @see Settings
+     * @see AudioBookDB
+     * @see PlayState
      */
     
     public void initializeModels(String pdfPath) throws IOException {
@@ -101,7 +103,8 @@ public class AppController {
         );
     }
     /**
-     * Initialize models without loading a specific product yet
+     * Initialize models without loading a specific book yet.
+     * @throws IOException if an I/O error occurs
      */
     private void initializeModelsEmpty() throws IOException {
         // Load settings model
@@ -390,7 +393,7 @@ public class AppController {
         }
     }
 
-    // =========== Handels Saving Settings ================
+    // =========== Handles Saving Settings ================
     public void onSettingsSaved(
             boolean progressBarEnabled,
             int chunkLoadedRange,

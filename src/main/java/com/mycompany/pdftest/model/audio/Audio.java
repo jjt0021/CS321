@@ -31,8 +31,8 @@ import com.google.gson.JsonObject;
 public class Audio {
 
     /**
-     * This is the interface that lets teh controller know when a chunk is finished playing
-     * It is usfull in playState so when a chunk is finished it can move to the next.
+     * This is the interface that lets the controller know when a chunk is finished playing.
+     * It is useful in {@link PlayState} so when a chunk is finished it can move to the next.
      */
     public interface PlaybackListener {
         void onChunkFinished(int chunkNumber);
@@ -42,8 +42,8 @@ public class Audio {
     private PlaybackListener playbackListener;
 
     /**
-     * This enum is used to keep track of the state of the http request for the audio.
-     * It lets the other sections know if it is ready to play, or if it is still generating, or has failed
+     * This enum is used to keep track of the state of the HTTP request for the audio.
+     * It lets the other sections know if it is ready to play, still generating, or has failed.
      */
     public enum AudioState {
         MISSING,
@@ -72,7 +72,7 @@ public class Audio {
     }
 
     /**
-     * Constructor with playback listener for continuous playback
+     * Constructor with {@link PlaybackListener} for continuous playback.
      */
     public Audio(String text, String voice, String url, String modelName, int chunk, String bookName, PlaybackListener listener) {
         this.text = text;
@@ -89,8 +89,8 @@ public class Audio {
     }
 
     /**
-     * Get the current audio state
-     * @return the current AudioState
+     * Get the current audio state.
+     * @return the current {@link AudioState}
      */
     public AudioState getCurrentState() {
         return currentState;
@@ -180,7 +180,7 @@ public class Audio {
     }
 
     /**
-     * This check if the audio is valid and can plya
+     * This checks if the audio is valid and can play.
      */
     public boolean isClipValid() {
         return clip != null && clip.isOpen();

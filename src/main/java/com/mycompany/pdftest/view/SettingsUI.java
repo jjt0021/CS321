@@ -1,6 +1,5 @@
 package com.mycompany.pdftest.view;
 
-import com.mycompany.pdftest.controller.AppController;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -19,12 +18,13 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
+import com.mycompany.pdftest.controller.AppController;
 import com.mycompany.pdftest.model.Settings;
 import com.mycompany.pdftest.model.Settings.SettingsValues;
 import com.mycompany.pdftest.model.Settings.TtsModel;
 
 /**
- *
+ * 
  * @author elimo
  */
 public class SettingsUI {
@@ -32,23 +32,23 @@ public class SettingsUI {
 
     // ==================== Constructor =======================
     /**
-     * Creates a new SettingsUI instance with the settings panel
-     * @param settings the Settings model
-     * @param controller the AppController
+     * Creates a new SettingsUI instance with the settings panel.
+     * @param settings the {@link Settings} model
+     * @param controller the {@link AppController}
      */
     public SettingsUI(Settings settings, AppController controller) {
         this.settingsScrollPane = createSettingsGUIPanel(settings, controller);
     }
 
     /**
-     * Get the settings panel as a scrollable pane
-     * @return JScrollPane containing the settings UI
+     * Get the settings panel as a scrollable pane.
+     * @return {@link JScrollPane} containing the settings UI
      */
     public JScrollPane getSettingsPane() {
         return settingsScrollPane;
     }
 
-    // ==================== Safty Checks =======================
+    // ==================== Safety Checks =======================
     private static boolean validateSettings(String ttsAddr, String modelName, String apiKey, String voicesString) {
         // Check if TTS URL is empty
         if (ttsAddr == null || ttsAddr.trim().isEmpty()) {

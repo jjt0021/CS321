@@ -11,6 +11,8 @@ import com.mycompany.pdftest.controller.AppController;
 /**
  *
  * @author elimo
+ * This is the main file
+ * it handles the initialization
  */
 public class PDFTest {
 
@@ -45,7 +47,7 @@ Implementation Notes
 
 We should update the current chunk with highlighting
 The current chunk will be updated in the highlighted chunk function
-We should create the adio objects when we make the 
+We should create the audio objects when we make the 
 
 The file explorer should handle checking if the pdf file is good.
 

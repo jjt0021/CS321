@@ -29,8 +29,8 @@ import com.mycompany.pdftest.model.Settings.SettingsValues;
 
 /**
  *
- * @author elimo This classes job is to manage the UI for listening to audio
- * books.
+ * @author elimo
+ * This class's job is to manage the UI for listening to audio books.
  */
 public class BookUI {
 
@@ -54,9 +54,9 @@ public class BookUI {
     }
 
     /**
-     * This set the controller reference for communication
+     * This sets the controller reference for communication.
      *
-     * @param controller the AppController instance
+     * @param controller the {@link AppController} instance
      */
     public void setController(AppController controller) {
         this.controller = controller;
@@ -138,8 +138,8 @@ public class BookUI {
     }
 
     /**
-     * Update the scroll pane with new content (called by Controller) This
-     * separates view updates from direct model access
+     * Update the scroll pane with new content (called by controller). This
+     * separates view updates from direct model access.
      *
      * @param window the new text chunks to display
      */
@@ -149,8 +149,8 @@ public class BookUI {
     }
 
     /**
-     * This get the staus indicater, so the user has some idea what is happening
-     * with the http reqest for audio
+     * This gets the status indicator, so the user has some idea what is happening
+     * with the HTTP request for audio.
      */
     private String getStatusIndicator(com.mycompany.pdftest.model.audio.Audio.AudioState state) {
         switch (state) {
@@ -174,13 +174,12 @@ public class BookUI {
     }
 
     /**
-     * This handels the highlighting color of the text. It does not handle
+     * This handles the highlighting color of the text. It does not handle
      * highlighting the current chunk, but it does handle the highlight color
-     * for telling the user if the text is generated and/or has been listened
-     * to.
+     * for telling the user if the text is generated and/or has been listened to.
      *
-     * @param state the AudioState
-     * @return Color for display
+     * @param state the {@link AudioState}
+     * @return {@link Color} for display
      */
     private Color getStatusColor(com.mycompany.pdftest.model.audio.Audio.AudioState state) {
         switch (state) {
@@ -321,13 +320,13 @@ public class BookUI {
     }
 
     /**
-     * This handles most of the GUI creation
+     * This handles most of the GUI creation.
      *
-     * @param frame
-     * @param playstate
-     * @param controller
-     * @return
-     * @throws IOException
+     * @param frame the main {@link JFrame}
+     * @param playstate the {@link PlayState} model
+     * @param controller the {@link AppController}
+     * @return {@link JLayeredPane} containing the book UI components
+     * @throws IOException if an I/O error occurs
      */
     public JLayeredPane makePane(JFrame frame, PlayState playstate, AppController controller) throws IOException {
         // Set controller reference for MVC communication
@@ -391,10 +390,8 @@ public class BookUI {
 
         /**
          * ============== Bottom navigation Buttons ================= These
-         * handel the bottom navigation buttons, which mostly have to do with
-         * the TTS models
-         *
-         *
+         * handel the bottom navigation buttons, which mostly 
+         * have to do with the TTS models
          */
         // This section is for all of the action buttons like play pause etc.
         playButton = new JButton(updatePlayButtonText(playstate.getPlayState()));

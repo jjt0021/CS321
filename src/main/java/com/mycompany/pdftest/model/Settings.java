@@ -21,12 +21,12 @@ import com.google.gson.annotations.SerializedName;
 
 /**
  *
- * This classes job is the save and retrive settings.
- * Most of the vlaues given are validated else in the FilmaMangerUI before it reaches this class.
+ * This class's job is to save and retrieve settings.
+ * Most of the values given are validated in the {@link FileManagerUI} before it reaches this class.
  */
 public class Settings {
 
-    private final File settingsFile = new File("Settings.json");// This should not change, but stll makes it easier to change if we decide to have a different dir for steaming and file exporation.
+    private final File settingsFile = new File("Settings.json");// This should not change, but still makes it easier to change if we decide to have a different dir for streaming and file exploration.
     private final Gson gson = new Gson();
     // private Type type = new TypeToken<java.util.List<AudioBookDB.AudioBook>>() {}.getType();
     private SettingsValues settings;
@@ -53,11 +53,11 @@ public class Settings {
     }
 
     /**
-     * This class is used to save the values for different text to speach models such as
-     *  - the URL for the api
-     *  - The list of voices avalible to the model
-     *  - The model Name
-     *  - The apiKey (if needed)
+     * This class is used to save the values for different text to speech models such as:
+     *  - the URL for the API
+     *  - the list of voices available to the model
+     *  - the model name
+     *  - the API key (if needed)
      */
     public class TtsModel {
 
@@ -85,18 +85,18 @@ public class Settings {
     }
 
     /**
-     * These next methods mainly deel with finding specific models and vlaues for those models.
-     * @return
+     * These next methods mainly deal with finding specific models and values for those models.
+     * @return list of model names
      */
     public List<String> modelNameList() {
         List<String> modelNameList = new ArrayList<>();
         for (TtsModel model : settings.ttsModelList) {
             modelNameList.add(model.name);
             System.out.println("Name added");
-            System.out.println("This is ithe model added" + model.name);
+            System.out.println("This is the model added" + model.name);
 
         }
-        System.out.println("Modle List");
+        System.out.println("Model List");
         System.out.print(modelNameList);
         return modelNameList;
     }
@@ -148,11 +148,11 @@ public class Settings {
         return new TtsModel();
     }
 
-    // The safe gaurds or this are the the SettingsUI.java
+    // The safeguards for this are in SettingsUI.java
     public void save() {
-        System.out.println("Save atemped");
+        System.out.println("Save attempted");
         try (Writer writer = new FileWriter(settingsFile)) {
-            System.out.println("Save successfull");
+            System.out.println("Save successful");
             System.out.print(settings);
             gson.toJson(settings, writer);
 
@@ -162,8 +162,8 @@ public class Settings {
     }
 
     /**
-     * This method handles loading the settings form the json file, or creating a default file
-     * if it does not exits.
+     * This method handles loading the settings from the JSON file, or creating a default file
+     * if it does not exist.
      */
     private void load() {
 
@@ -173,7 +173,7 @@ public class Settings {
 
                 settings = gson.fromJson(reader, SettingsValues.class);
 
-                // In case the file is empty - Can happen if all audioBOoks are deleted
+                // In case the file is empty - Can happen if all audiobooks are deleted
                 if (settings == null) {
                     settings = new SettingsValues();
                 }

@@ -30,8 +30,8 @@ import com.mycompany.pdftest.model.audio.Audio;
 
 
 /**
-* This classes job keeps track of the current chunk, checks if a reload is needed for the gui, 
-* and keeps track the play pause state.
+* This class's job keeps track of the current chunk, checks if a reload is needed for the GUI, 
+* and keeps track of the play/pause state.
  */
 public class PlayState implements Audio.PlaybackListener {
 
@@ -69,15 +69,15 @@ public class PlayState implements Audio.PlaybackListener {
     private String voice;
 
     /**
-     * These needs to be all values gotten from the settings file
-     * @param currentChunk
-     * @param fullBook
-     * @param loadedRange
-     * @param reloadRange
-     * @param cacheSize
-     * @param bookName
-     * @param initialModel
-     * @param voice
+     * Initialize PlayState with values from the settings file.
+     * @param currentChunk the current chunk index
+     * @param fullBook the full list of text chunks
+     * @param loadedRange the range of chunks to load around current chunk
+     * @param reloadRange the range that triggers a reload
+     * @param cacheSize the size of the audio cache
+     * @param bookName the name of the current book
+     * @param initialModel the {@link TtsModel} to use
+     * @param voice the voice to use for text-to-speech
      */
     public PlayState(int currentChunk, ArrayList<String> fullBook, int loadedRange, int reloadRange, int cacheSize, String bookName, TtsModel initialModel, String voice) {
         this.loadedRange = loadedRange;

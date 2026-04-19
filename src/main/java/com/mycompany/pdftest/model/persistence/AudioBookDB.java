@@ -23,13 +23,13 @@ import com.google.gson.reflect.TypeToken;
  * @author elimo
  */
 /**
- * The Class handels saving and loading the audio book Database
- * The data base is saved using jason and uses the gson libary to save and retrive data
+ * This class handles saving and loading the audio book database.
+ * The database is saved using JSON and uses the {@link Gson} library to save and retrieve data.
  * 
  */
 public class AudioBookDB {
 
-    private final File db = new File("AudioBookDB.json");// This should not change, but stll makes it easier to change if we decide to have a different dir for steaming and file exporation.
+    private final File db = new File("AudioBookDB.json");// This should not change, but still makes it easier to change if we decide to have a different dir for streaming and file exploration.
     private final Gson gson = new Gson();
     private Type type = new TypeToken<List<AudioBook>>() {
     }.getType();
@@ -61,7 +61,7 @@ public class AudioBookDB {
     }
 
     /**
-     * This checks if the data base exists and loads it if it does and creates it if it does not.
+     * This checks if the database exists and loads it if it does, or creates it if it does not.
      */
     private void load() {
 
@@ -71,7 +71,7 @@ public class AudioBookDB {
 
                 audioBooks = gson.fromJson(reader, type);
 
-                // In case the file is empty - Can happen if all audioBOoks are deleted
+                // In case the file is empty - Can happen if all audiobooks are deleted
                 if (audioBooks == null) {
                     audioBooks = new ArrayList<>();
                 } else {
@@ -123,10 +123,10 @@ public class AudioBookDB {
     }
 
     /**
-     * This updates only the current chunk in the audio book DB.
+     * This updates only the current chunk in the audio book database.
      * 
-     * @param filePath
-     * @param currentChunk
+     * @param filePath the path to the audio book file
+     * @param currentChunk the current chunk number to save
      */
     public void upDateCurrentChunk(String filePath, int currentChunk) {
         // Validate filePath
@@ -148,10 +148,10 @@ public class AudioBookDB {
     }
 
     /**
-     * This is used to update a book mark, The text should either be a note or the chunk being bookmarked
-     * @param filePath
-     * @param bookMarkID
-     * @param bookMarkText
+     * This is used to update a bookmark. The text should either be a note or the chunk being bookmarked.
+     * @param filePath the path to the audio book file
+     * @param bookMarkID the ID of the bookmark
+     * @param bookMarkText the text or note for the bookmark
      */
     public void updateBookMarks(String filePath, int bookMarkID, String bookMarkText) {
         // Validate filePath

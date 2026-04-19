@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -17,7 +18,7 @@ import org.apache.pdfbox.text.PDFTextStripper;
  * @author elimo
  */
 
-// This classes job is to get text from a pdf and spit it into chunks
+// This class's job is to get text from a PDF and split it into chunks
 public class TextUtils {
 
     public static String getTextFromPdf(File pdfFile) throws IOException {

@@ -24,7 +24,7 @@ import com.mycompany.pdftest.controller.AppController;
 import com.mycompany.pdftest.model.persistence.AudioBookDB;
 
 /**
- * Responsible for the GUI that allows users to manage their PDF files. 
+ * Responsible for the GUI that allows users to manage their PDF files.
  */
 public class FileManagerUI {
 
@@ -37,67 +37,73 @@ public class FileManagerUI {
         this.audioBookDB = audioBookDB;
     }
 
-    /** Intent: Make the GUI for managing pdfs. */
+    /**
+     * Make the GUI for managing PDFs.
+     */
     public JPanel makeGUI() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(Color.DARK_GRAY);
-        
+
         // Top section: Title and Add Button
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         topPanel.setBackground(Color.DARK_GRAY);
         JLabel titleLabel = new JLabel("Your Audiobooks");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         titleLabel.setForeground(Color.WHITE);
-        
+
         JButton addButton = new JButton("+ Add PDF");
         addButton.setFocusPainted(true);
         addButton.setContentAreaFilled(true);
         addButton.setBackground(Color.LIGHT_GRAY);
         addButton.setForeground(Color.BLACK);
         addButton.addActionListener(e -> uploadFile());
-        
+
         topPanel.add(titleLabel);
         topPanel.add(Box.createHorizontalStrut(20)); // Spacing
         topPanel.add(addButton);
-        
+
         // Center section: List of files
         listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
         listPanel.setBackground(Color.DARK_GRAY);
         JScrollPane scrollPane = new JScrollPane(listPanel);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        
+
         mainPanel.add(topPanel, BorderLayout.NORTH);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
-        
+
         refreshFileList();
-        
+
         return mainPanel;
     }
 
-    /** Intent: Opens a file chooser to "upload" a PDF into the system */
+    /**
+     * Opens a file chooser to "upload" a PDF into the system.
+     */
     private void uploadFile() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Select a PDF Book");
         fileChooser.setFileFilter(new FileNameExtensionFilter("PDF Documents", "pdf"));
-        
+
         int result = fileChooser.showOpenDialog(null);
-        
+
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             addPath(selectedFile.getAbsolutePath());
         }
     }
 
-    /** Intent: Refreshes the display whenever a file is added or removed */
+    /**
+     * Refreshes the display whenever a file is added or removed.
+     */
     public void refreshFileList() {
         listPanel.removeAll();
-        
+
         // Get screen dimensions for sizing
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenWidth = (int) screenSize.getWidth();
         int itemHeight = 80; // Fixed height for each book item
-        
+
         List<AudioBookDB.AudioBook> files = getFiles();
         if (files.isEmpty()) {
             JPanel emptyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -108,25 +114,25 @@ public class FileManagerUI {
             listPanel.add(emptyPanel);
         } else {
             for (AudioBookDB.AudioBook book : files) {
-                // Skip entries with null file paths
+                // Skip entries with null file paths, Important if there are no books
                 if (book.filePath == null || book.filePath.trim().isEmpty()) {
                     continue;
                 }
-                
+
                 JPanel itemPanel = new JPanel(new BorderLayout());
                 itemPanel.setBackground(Color.DARK_GRAY);
                 itemPanel.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY),
-                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
+                        BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY),
+                        BorderFactory.createEmptyBorder(10, 10, 10, 10)
                 ));
-                itemPanel.setMaximumSize(new Dimension((int)(screenWidth * 0.99), itemHeight));
-                itemPanel.setPreferredSize(new Dimension((int)(screenWidth * 0.99), itemHeight));
-                
+                itemPanel.setMaximumSize(new Dimension((int) (screenWidth * 0.99), itemHeight));
+                itemPanel.setPreferredSize(new Dimension((int) (screenWidth * 0.99), itemHeight));
+
                 File f = new File(book.filePath);
                 JLabel nameLabel = new JLabel(f.getName());
                 nameLabel.setFont(new Font("Arial", Font.PLAIN, 14));
                 nameLabel.setForeground(Color.WHITE);
-                
+
                 JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
                 btnPanel.setBackground(Color.DARK_GRAY);
                 JButton playBtn = new JButton("Open");
@@ -134,13 +140,13 @@ public class FileManagerUI {
                 playBtn.setContentAreaFilled(true);
                 playBtn.setBackground(Color.RED);
                 playBtn.setForeground(Color.WHITE);
-                
+
                 JButton delBtn = new JButton("Delete");
                 delBtn.setFocusPainted(true);
                 delBtn.setContentAreaFilled(true);
                 delBtn.setBackground(Color.LIGHT_GRAY);
                 delBtn.setForeground(Color.BLACK);
-                
+
                 playBtn.addActionListener(e -> {
                     try {
                         // Pass the selected file to the controller's new openBook method
@@ -150,29 +156,35 @@ public class FileManagerUI {
                         ex.printStackTrace(); // Prints the exact error to the console just in case!
                     }
                 });
-                
+
                 delBtn.addActionListener(e -> deletePath(book.filePath));
-                
+
                 btnPanel.add(playBtn);
                 btnPanel.add(delBtn);
-                
+
                 itemPanel.add(nameLabel, BorderLayout.CENTER);
                 itemPanel.add(btnPanel, BorderLayout.EAST);
-                
+
                 listPanel.add(itemPanel);
             }
         }
-        
+
         listPanel.revalidate();
         listPanel.repaint();
     }
 
-    /** Intent: Get the files from the audioBook DB to display. */
+    /**
+     * Get the files from the {@link AudioBookDB} to display.
+     * @return list of AudioBook files
+     */
     public List<AudioBookDB.AudioBook> getFiles() {
         return audioBookDB.getAudioBooks();
     }
 
-    /** Intent: Add a new file path to the audioBook DB. */
+    /**
+     * Add a new file path to the {@link AudioBookDB}.
+     * @param path the file path to add
+     */
     public void addPath(String filePath) {
         // Check if it already exists to avoid duplicates
         for (AudioBookDB.AudioBook book : getFiles()) {
@@ -186,12 +198,15 @@ public class FileManagerUI {
         refreshFileList();
     }
 
-    /** Intent: Delete a specific file path from the audioBook DB. */
+    /**
+     * Delete a specific file path from the {@link AudioBookDB}.
+     * @param path the file path to delete
+     */
     public void deletePath(String filePath) {
-        int confirm = JOptionPane.showConfirmDialog(null, 
-            "Are you sure you want to remove this book from your library?", 
-            "Confirm Delete", JOptionPane.YES_NO_OPTION);
-            
+        int confirm = JOptionPane.showConfirmDialog(null,
+                "Are you sure you want to remove this book from your library?",
+                "Confirm Delete", JOptionPane.YES_NO_OPTION);
+
         if (confirm == JOptionPane.YES_OPTION) {
             audioBookDB.removeAudioBook(filePath);
             audioBookDB.save();
