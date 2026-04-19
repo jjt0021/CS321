@@ -84,6 +84,10 @@ public class Audio {
         this.playbackListener = listener;
     }
 
+    /**
+     * Check if audio is currently being generated from the TTS API.
+     * @return true if generating, false otherwise
+     */
     public boolean getIsGenerating() {
         return (currentState == AudioState.GENERATING);
     }
@@ -96,6 +100,10 @@ public class Audio {
         return currentState;
     }
 
+    /**
+     * Make an HTTP request to the TTS API to generate audio for this chunk.
+     * Saves the resulting audio file to the cache and updates state.
+     */
     public void requestAudio() {
         // This will be where we request audio.
         System.out.println("[Audio] *** requestAudio() START for chunk " + chunk + " ***");
@@ -180,7 +188,8 @@ public class Audio {
     }
 
     /**
-     * This checks if the audio is valid and can play.
+     * Check if the audio clip is valid and ready to play.
+     * @return true if clip exists and is open, false otherwise
      */
     public boolean isClipValid() {
         return clip != null && clip.isOpen();
@@ -188,6 +197,9 @@ public class Audio {
 
     /**
      * This stops audio playback and close the clip
+     */
+    /**
+     * Stop audio playback and close the clip.
      */
     public void stopAudio() {
         System.out.println("[Audio] stopAudio() called for chunk " + chunk);
@@ -215,6 +227,14 @@ public class Audio {
         return playbackListener;
     }
 
+    /**
+     * Load and start playing the audio file.
+     * Sets up the Java Sound Clip and begins playback.
+     * Calls listener callback when chunk finishes playing.
+     * @throws UnsupportedAudioFileException if audio format isn't supported
+     * @throws IOException if audio file can't be read
+     * @throws LineUnavailableException if audio system is unavailable
+     */
     public void playAudio() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
         System.out.println("[Audio] playAudio() called for chunk " + chunk);
         if (fileURL == null) {
@@ -252,6 +272,9 @@ public class Audio {
         clip.start();
     }
 
+    /**
+     * Resume playback from the saved position, or reload from file if needed.
+     */
     public void resumeAudio() {
         System.out.println("[Audio] resumeAudio() called for chunk " + chunk);
         try {
@@ -276,6 +299,9 @@ public class Audio {
         }
     }
 
+    /**
+     * Pause audio playback and save the current position.
+     */
     public void pauseAudio() {
         System.out.println("[Audio] pauseAudio() called for chunk " + chunk);
         if (!isClipValid()) {

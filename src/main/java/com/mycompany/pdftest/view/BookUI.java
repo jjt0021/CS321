@@ -62,6 +62,13 @@ public class BookUI {
         this.controller = controller;
     }
 
+    /**
+     * Creates the scrollable text panel with clickable chunks.
+     * Builds buttons for each text chunk with status indicators and colors.
+     * @param window the list of text chunks to display
+     * @param playState the current playback state
+     * @return scrollable pane containing the chunk buttons
+     */
     public JScrollPane makeScrollPane(ArrayList<String> window, PlayState playState) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int width = (int) screenSize.getWidth();
@@ -152,6 +159,11 @@ public class BookUI {
      * This gets the status indicator, so the user has some idea what is happening
      * with the HTTP request for audio.
      */
+    /**
+     * Get the unicode symbol for the current audio state.
+     * @param state the audio state
+     * @return symbol representing the state (✓, ⏳, ✗, ◯, etc.)
+     */
     private String getStatusIndicator(com.mycompany.pdftest.model.audio.Audio.AudioState state) {
         switch (state) {
             case READY:
@@ -174,12 +186,10 @@ public class BookUI {
     }
 
     /**
-     * This handles the highlighting color of the text. It does not handle
-     * highlighting the current chunk, but it does handle the highlight color
-     * for telling the user if the text is generated and/or has been listened to.
-     *
-     * @param state the {@link AudioState}
-     * @return {@link Color} for display
+     * Get the display color for a chunk based on its audio state.
+     * Shows user if text is ready, generating, failed, or listened to.
+     * @param state the audio state
+     * @return color to display for this chunk
      */
     private Color getStatusColor(com.mycompany.pdftest.model.audio.Audio.AudioState state) {
         switch (state) {
@@ -202,6 +212,10 @@ public class BookUI {
         }
     }
 
+    /**
+     * Highlight the current chunk being played with a yellow background.
+     * @param currentChunkNum the chunk number to highlight
+     */
     public void highlightCurrentChunk(int currentChunkNum) {
         // Unhighlight all buttons
         for (JButton button : chunkButtons.values()) {
@@ -220,7 +234,8 @@ public class BookUI {
     }
 
     /**
-     * This handles bookmarking the current chunk
+     * Create a bookmark note for the current chunk.
+     * Opens a dialog for user to enter a note, then saves it.
      */
     public void bookmarkCurrentChunk() {
         int currentChunk = playState.getCurrentChunk();
@@ -245,7 +260,8 @@ public class BookUI {
     }
 
     /**
-     * This shows the bookmarks and allows the users to jump to them.
+     * Display all saved bookmarks in a dialog.
+     * Let user click a bookmark to jump to that chunk.
      */
     public void showBookmarks() {
         if (controller == null) {
