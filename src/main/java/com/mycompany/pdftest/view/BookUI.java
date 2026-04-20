@@ -23,9 +23,9 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
 import com.mycompany.pdftest.controller.AppController;
-import com.mycompany.pdftest.model.state.PlayState;
 import com.mycompany.pdftest.model.persistence.Settings;
 import com.mycompany.pdftest.model.persistence.Settings.SettingsValues;
+import com.mycompany.pdftest.model.state.PlayState;
 
 /**
  *
@@ -34,9 +34,9 @@ import com.mycompany.pdftest.model.persistence.Settings.SettingsValues;
  */
 public class BookUI {
 
-    private PlayState playState;
-    private Settings settingsObject;
-    private SettingsValues loadedValues;
+    private final PlayState playState;
+    private final Settings settingsObject;
+    private final SettingsValues loadedValues;
     private AppController controller;
 
     //need to make it not staic so each book gets a fresh UI
@@ -86,8 +86,7 @@ public class BookUI {
 
         // This makes all of the buttons and adds them to the scroll pane.
         for (int i = 0; i < window.size(); i++) {
-            // I had a bug where I forgot to add startChunk to i resulting it not reloading properly.
-            // ChatGPT added these lines
+            // Calculate absolute chunk index using the start of the current window
             int absoluteIndex = playState.getStartChunk() + i;
 
             // Get audio state for this chunk
@@ -98,7 +97,6 @@ public class BookUI {
             JButton button = new JButton(buttonText);
             button.putClientProperty("chunkNum", absoluteIndex);
             button.putClientProperty("chunkText", window.get(i));  // Store original text for updates
-            // End of chat
 
             button.setFocusPainted(false);
             button.setContentAreaFilled(false);

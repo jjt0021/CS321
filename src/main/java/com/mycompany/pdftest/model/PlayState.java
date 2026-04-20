@@ -1,4 +1,4 @@
-package com.mycompany.pdftest.model.state;
+package com.mycompany.pdftest.model;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +15,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.mycompany.pdftest.model.audio.Audio;
 import com.mycompany.pdftest.model.persistence.Settings.TtsModel;
+import com.mycompany.pdftest.model.audio.Audio;
 
 
 /*
@@ -91,7 +91,7 @@ public class PlayState implements Audio.PlaybackListener {
         this.initialModel = initialModel;
         this.voice = voice;
 
-        // Initialize audio cache directory and start prefetch worker
+        // Initialize audio cache directory and start a single-threaded prefetch worker
         try {
             Files.createDirectories(audioCacheDir);
         } catch (IOException ex) {
@@ -256,22 +256,13 @@ public class PlayState implements Audio.PlaybackListener {
 
     public void setCurrentChunk(int currentChunk) {
 
-        System.out.println("Full book size: " + fullBook.size());
+        //TODO: need to update the current chunk in AudioBookDB
+        System.out.println("This is the full book size " + fullBook.size());
         this.currentChunk = currentChunk;
     }
 
     public int getCurrentChunk() {
         return currentChunk;
-    }
-
-    /**
-     * Updates the voice to use for audio generation.
-     * This allows voice changes made in settings to be immediately applied to new audio requests.
-     * @param newVoice the new voice to use
-     */
-    public void setVoice(String newVoice) {
-        this.voice = newVoice;
-        System.out.println("PlayState voice updated to: " + newVoice);
     }
 
     public int getStartChunk() {
@@ -326,7 +317,7 @@ public class PlayState implements Audio.PlaybackListener {
 
         if (isPlaying) {
             System.out.println("[PlayState] PLAY requested for chunk " + currentChunk);
-
+            //TODO need to add pause and play things.
             Audio audio = cachedWindow.get(currentChunk);
             if (audio == null) {
                 System.out.println("[PlayState] No cached audio for chunk " + currentChunk + ", requesting generation.");

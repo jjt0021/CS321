@@ -23,7 +23,7 @@ import com.mycompany.pdftest.view.FileManagerUI;
 import com.mycompany.pdftest.view.SettingsUI;
 
 /**
-This class is the controller, it was added to more closely mirror the MVC model.
+This class is the controller.
  */
 public class AppController {
 
@@ -93,7 +93,7 @@ public class AppController {
         
         // Initialize play state model
         playStateModel = new PlayState(
-            savedChunk,                                           // Uses saved progress instead of 0
+            savedChunk,
             currentBook,                                          
             initialSettings.loadedRange,                          
             initialSettings.reloadRange,                          
@@ -228,13 +228,13 @@ public class AppController {
     }
     
     /**
-     * Safely loads a new book and refreshes the UI
+     * Loads a new book and refreshes the UI
      */
     public void openBook(String filePath) throws IOException {
         // Check if file exists before trying to open it
         File pdfFile = new File(filePath);
         if (!pdfFile.exists()) {
-            // File not found - remove from database
+            // If the file is not found it is removed from the data base
             audioBookDBModel.removeAudioBook(filePath);
             audioBookDBModel.save();
             
@@ -243,7 +243,7 @@ public class AppController {
                 fileManagerUIView.refreshFileList();
             }
             
-            // Notify user
+            // User notification.
             javax.swing.JOptionPane.showMessageDialog(
                 null,
                 "The PDF file could not be found:\n" + filePath + "\n\nIt has been removed from your library.",
@@ -387,6 +387,7 @@ public class AppController {
     /**
      * Refresh status indicators on demand
      * Call this when you need to update the UI immediately
+     * important to give the user feedback on the api response
      */
     public void refreshStatusIndicators() {
         if (bookUIView != null) {
@@ -394,7 +395,7 @@ public class AppController {
         }
     }
 
-    // =========== Handles Saving Settings ================
+    // =========== Saving Settings ================
     public void onSettingsSaved(
             boolean progressBarEnabled,
             int chunkLoadedRange,

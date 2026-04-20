@@ -117,8 +117,6 @@ public class Audio {
         System.out.flush();
         HttpClient client = HttpClient.newHttpClient();
 
-        //Chat-GPT edited these lines. There were some issues with json formating.
-        // It made some slight changes to fix the issue.
         // Build JSON using GSON to properly escape special characters in the text
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("model", model);
@@ -128,8 +126,6 @@ public class Audio {
         
         Gson gson = new Gson();
         String jsonBody = gson.toJson(jsonObject);
-        
-        // End of GPT.
         
         System.out.println("[Audio] JSON Body: " + jsonBody);
 
@@ -144,7 +140,7 @@ public class Audio {
         try {
             System.out.println("[Audio] *** SENDING HTTP REQUEST to " + url + " ***");
             System.out.flush();
-            // Use sendAsync() instead of send() - this actually works with the TTS server
+            // Use sendAsync() instead of send() - this works with the TTS server
             client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray())
                     .thenAccept(response -> {
                         try {
@@ -197,9 +193,6 @@ public class Audio {
 
     /**
      * This stops audio playback and close the clip
-     */
-    /**
-     * Stop audio playback and close the clip.
      */
     public void stopAudio() {
         System.out.println("[Audio] stopAudio() called for chunk " + chunk);

@@ -264,11 +264,7 @@ public class SettingsUI {
 
         row++;
 
-        // *************** Start of model area *******************
-        // I think a drop down menue of models, with the last option being new model would be nice.
-        // All we would need to change is the defulat value and which object it saves to.
-        // TTS Addr
-        // This is for the different TTS mdoels 
+        // TTS Model Settings Section 
         gbc.gridwidth = 1; // Take up one column
         gbc.gridheight = 1; // Take up one row
         gbc.anchor = GridBagConstraints.CENTER; // Horizontally center the component
@@ -289,7 +285,7 @@ public class SettingsUI {
         settingsPanel.add(
                 new JLabel("TTS Model:"), gbc);
 
-        // These are the varibles for the text feilds for URL, modelname, and key. I am delcarling them up here so I can set the defualt value in the drop down menue.
+        // Text fields for model configuration (URL, name, key, voices)
         JTextField TTSURL = new JTextField();
         JTextField voices = new JTextField();
         JTextField modelName = new JTextField();
@@ -309,12 +305,11 @@ public class SettingsUI {
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         this.modelSelector = new JComboBox<>(
-                //new String[]{"GPT", "Kokoro", "VoxCPM", "New"}
                 // This converts the list to a string of the model names because JCOmboBox does not take strings
                 settings.modelNameList().toArray(new String[0])
         );
 
-        System.out.println("This is the Current Model Name that should be deault - " + initialSettings.TtsModel);
+        System.out.println("Current TTS Model: " + initialSettings.TtsModel);
         this.modelSelector.setSelectedItem(initialSettings.TtsModel);
 
         this.modelSelector.addActionListener(e
@@ -499,15 +494,12 @@ public class SettingsUI {
                 voiceSelected = voiceSelected.trim();
             }
 
-            // I need to check if everything is entered correctly.
-            // The end user can not name a model new. This is to prevent that
-            // This only matter if JComboBox is New
+            // Validate model name is not reserved
             if (ttsModelSelected.equals("New")) {
                 if (this.cachedSettings.modelNameList().contains(initialModel.name)) {
-
-                    // TODO: give the user an error.
-                    //Cut out of the saving
-                    //Also combine 
+                    // Model name already exists, prevent duplicate
+                    JOptionPane.showMessageDialog(null, "A model with this name already exists.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
             }
 

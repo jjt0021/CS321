@@ -34,7 +34,6 @@ public class Settings {
     public Settings() {
         load();
         if (settings.ttsModelList.size() == 0) {
-            //TtsModel temp = 
             settings.ttsModelList.add(new TtsModel());
             System.out.println("New TTSModel added");
             System.out.print(settings.ttsModelList);
@@ -112,6 +111,10 @@ public class Settings {
         return new TtsModel();
     }
 
+    /*
+    This function is used to update the model list, which includes adding new models, and replacing models that have been altered.
+    The different models or identified by their names, so we can not have 2 models with the same name.
+    **/
     public void updateModelList(TtsModel inputModel) {
         List<String> modelNamesList = modelNameList();
         if (modelNamesList.contains(inputModel.name)) {

@@ -26,7 +26,6 @@ public class PDFTest {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(width, height);
 
-        // ========== MVC Architecture ==========
         // Initialize the controller (main coordinator between Model and View)
         AppController appController = new AppController(frame);
         
@@ -51,7 +50,7 @@ We should create the audio objects when we make the
 
 The file explorer should handle checking if the pdf file is good.
 
-MVC Architecture Overview:
+Architecture Overview:
 - AppController: Coordinates all interactions between Models and Views
 - Models: PlayState, Settings, AudioBookDB, Audio (manage application data)
 - Views: BookUI, SettingsUI (display data and handle user input)

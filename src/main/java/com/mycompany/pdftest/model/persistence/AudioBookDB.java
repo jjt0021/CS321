@@ -18,10 +18,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
-/**
- *
- * @author elimo
- */
+
 /**
  * This class handles saving and loading the audio book database.
  * The database is saved using JSON and uses the {@link Gson} library to save and retrieve data.
@@ -104,6 +101,9 @@ public class AudioBookDB {
     }
 
 
+    /*
+    * This saves te data base and filters out bad data.
+    **/
     public void save() {
         try (Writer writer = new FileWriter(db)) {
             // Filter out corrupted entries (those with null or empty filePath)
@@ -148,7 +148,7 @@ public class AudioBookDB {
     }
 
     /**
-     * This is used to update a bookmark. The text should either be a note or the chunk being bookmarked.
+     * This is used to update a bookmark. The text should either be a note or the chunk being text of the bookmarked.
      * @param filePath the path to the audio book file
      * @param bookMarkID the ID of the bookmark
      * @param bookMarkText the text or note for the bookmark
