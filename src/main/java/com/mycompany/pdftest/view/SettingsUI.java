@@ -17,6 +17,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import com.mycompany.pdftest.controller.AppController;
 import com.mycompany.pdftest.model.persistence.Settings;
@@ -246,6 +248,17 @@ public class SettingsUI {
         // Use real voice names from the selected model
         String[] ttsNames = initialModel.voices.toArray(new String[0]);
         JComboBox<String> voiceBox = new JComboBox<>(ttsNames);
+        
+        // Set the voiceBox to the saved voice if it exists in the current model's voices
+        if (initialSettings.voice != null && !initialSettings.voice.isEmpty()) {
+            if (initialModel.voices.contains(initialSettings.voice)) {
+                voiceBox.setSelectedItem(initialSettings.voice);
+            } else if (!initialModel.voices.isEmpty()) {
+                voiceBox.setSelectedIndex(0); // Default to first voice if saved voice not in current model
+            }
+        } else if (!initialModel.voices.isEmpty()) {
+            voiceBox.setSelectedIndex(0); // Default to first voice if no saved voice
+        }
 
         settingsPanel.add(voiceBox, gbc);
 
@@ -315,7 +328,15 @@ public class SettingsUI {
             modelName.setText(modelSelectedString);
             // Update the voice combo box to reflect the newly selected model's voices
             voiceBox.setModel(new javax.swing.DefaultComboBoxModel<>(modelSelectedObject.voices.toArray(new String[0])));
-            if (!modelSelectedObject.voices.isEmpty()) {
+            
+            // Preserve the saved voice selection if it exists in the new model
+            String savedVoice = this.cachedSettings.getSettingsValues().voice;
+            
+            if (savedVoice != null && !savedVoice.isEmpty() && modelSelectedObject.voices.contains(savedVoice)) {
+                // Use the saved voice if it exists in this model
+                voiceBox.setSelectedItem(savedVoice);
+            } else if (!modelSelectedObject.voices.isEmpty()) {
+                // Otherwise default to first voice
                 voiceBox.setSelectedIndex(0);
             }
         }
@@ -366,6 +387,40 @@ public class SettingsUI {
         gbc.weightx = 1.0;
 
         settingsPanel.add(voices, gbc);
+
+        // Add listener to update voice dropdown when voices text changes
+        voices.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                updateVoiceBoxFromTextField();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                updateVoiceBoxFromTextField();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                updateVoiceBoxFromTextField();
+            }
+            
+            private void updateVoiceBoxFromTextField() {
+                String voicesText = voices.getText().trim();
+                if (!voicesText.isEmpty()) {
+                    List<String> updatedVoices = Arrays.asList(voicesText.split(","));
+                    updatedVoices = updatedVoices.stream()
+                        .map(String::trim)
+                        .filter(v -> !v.isEmpty())
+                        .toList();
+                    
+                    Object currentSelection = voiceBox.getSelectedItem();
+                    voiceBox.setModel(new javax.swing.DefaultComboBoxModel<>(updatedVoices.toArray(new String[0])));
+                    
+                    // Try to keep the previous selection if it's still in the list
+                    if (currentSelection != null && updatedVoices.contains(currentSelection)) {
+                        voiceBox.setSelectedItem(currentSelection);
+                    } else if (!updatedVoices.isEmpty()) {
+                        voiceBox.setSelectedIndex(0);
+                    }
+                }
+            }
+        });
 
         row++;
 
@@ -428,8 +483,20 @@ public class SettingsUI {
             }
 
             List<String> voicesList = Arrays.asList(voicesString.split(","));
-            for (String voice : voicesList) {
-                voice.strip();
+            // Trim whitespace from each voice (strings are immutable, so create new list)
+            voicesList = voicesList.stream()
+                .map(String::trim)
+                .toList();
+
+            // Ensure the selected voice is in the voices list; otherwise use first voice
+            if (voiceSelected == null || voiceSelected.trim().isEmpty() || !voicesList.contains(voiceSelected.trim())) {
+                if (!voicesList.isEmpty()) {
+                    voiceSelected = voicesList.get(0);
+                    System.out.println("Voice selection adjusted to: " + voiceSelected);
+                }
+            } else {
+                // Trim the selected voice to remove any whitespace
+                voiceSelected = voiceSelected.trim();
             }
 
             // I need to check if everything is entered correctly.

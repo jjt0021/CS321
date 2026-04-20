@@ -15,8 +15,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.mycompany.pdftest.model.persistence.Settings.TtsModel;
 import com.mycompany.pdftest.model.audio.Audio;
+import com.mycompany.pdftest.model.persistence.Settings.TtsModel;
 
 
 /*
@@ -264,6 +264,16 @@ public class PlayState implements Audio.PlaybackListener {
 
     public int getCurrentChunk() {
         return currentChunk;
+    }
+
+    /**
+     * Updates the voice to use for audio generation.
+     * This allows voice changes made in settings to be immediately applied to new audio requests.
+     * @param newVoice the new voice to use
+     */
+    public void setVoice(String newVoice) {
+        this.voice = newVoice;
+        System.out.println("PlayState voice updated to: " + newVoice);
     }
 
     public int getStartChunk() {

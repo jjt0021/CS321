@@ -426,6 +426,11 @@ public class AppController {
         
         settingsModel.save();
         
+        // Update PlayState with the new voice for future audio requests
+        if (playStateModel != null) {
+            playStateModel.setVoice(voiceSelected);
+        }
+        
         // Refresh the model dropdown in SettingsUI to show the newly added model
         if (settingsUIView != null) {
             settingsUIView.refreshModelDropdown(settingsModel);
