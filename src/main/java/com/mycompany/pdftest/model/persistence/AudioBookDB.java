@@ -192,18 +192,29 @@ public class AudioBookDB {
             return;
         }
         
+        // Normalize the path for comparison (handle different slash styles and case sensitivity)
+        String normalizedFilePath = new File(filePath).getAbsolutePath();
+        
         AudioBook bookToRemove = null;
         for (AudioBook book : audioBooks) {
-            if (book.filePath != null && book.filePath.equals(filePath)) {
-                bookToRemove = book;
-                break;
+            if (book.filePath != null) {
+                // Normalize the book's path too for comparison
+                String normalizedBookPath = new File(book.filePath).getAbsolutePath();
+                if (normalizedBookPath.equalsIgnoreCase(normalizedFilePath)) {
+                    bookToRemove = book;
+                    System.out.println("Found book to remove: " + book.filePath);
+                    break;
+                }
             }
         }
         
-        // We need to do this outside of the loop becuase you can not remove an object form a list while loop through it.
+        // We need to do this outside of the loop because you can not remove an object from a list while looping through it.
         if (bookToRemove != null) {
             audioBooks.remove(bookToRemove);
+            System.out.println("Book removed from database");
             save();
+        } else {
+            System.out.println("Book not found in database: " + filePath);
         }
     }
 }

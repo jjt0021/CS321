@@ -208,8 +208,8 @@ public class FileManagerUI {
                 "Confirm Delete", JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
+            // removeAudioBook already calls save() internally
             audioBookDB.removeAudioBook(filePath);
-            audioBookDB.save();
             refreshFileList();
         }
     }
