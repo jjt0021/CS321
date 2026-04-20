@@ -23,9 +23,9 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
 import com.mycompany.pdftest.controller.AppController;
-import com.mycompany.pdftest.model.PlayState;
-import com.mycompany.pdftest.model.Settings;
-import com.mycompany.pdftest.model.Settings.SettingsValues;
+import com.mycompany.pdftest.model.state.PlayState;
+import com.mycompany.pdftest.model.persistence.Settings;
+import com.mycompany.pdftest.model.persistence.Settings.SettingsValues;
 
 /**
  *

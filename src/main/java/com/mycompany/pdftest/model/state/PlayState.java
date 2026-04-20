@@ -1,4 +1,4 @@
-package com.mycompany.pdftest.model;
+package com.mycompany.pdftest.model.state;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.mycompany.pdftest.model.Settings.TtsModel;
+import com.mycompany.pdftest.model.persistence.Settings.TtsModel;
 import com.mycompany.pdftest.model.audio.Audio;
 
 

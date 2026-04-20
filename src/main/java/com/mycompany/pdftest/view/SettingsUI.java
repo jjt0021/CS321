@@ -19,9 +19,9 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
 import com.mycompany.pdftest.controller.AppController;
-import com.mycompany.pdftest.model.Settings;
-import com.mycompany.pdftest.model.Settings.SettingsValues;
-import com.mycompany.pdftest.model.Settings.TtsModel;
+import com.mycompany.pdftest.model.persistence.Settings;
+import com.mycompany.pdftest.model.persistence.Settings.SettingsValues;
+import com.mycompany.pdftest.model.persistence.Settings.TtsModel;
 
 /**
  * 
@@ -29,6 +29,8 @@ import com.mycompany.pdftest.model.Settings.TtsModel;
  */
 public class SettingsUI {
     private JScrollPane settingsScrollPane;
+    private JComboBox<String> modelSelector;
+    private Settings cachedSettings;
 
     // ==================== Constructor =======================
     /**
@@ -46,6 +48,35 @@ public class SettingsUI {
      */
     public JScrollPane getSettingsPane() {
         return settingsScrollPane;
+    }
+
+    /**
+     * Refreshes the model dropdown to reflect newly added models in the Settings model.
+     * This method reloads the Settings from disk, updates the dropdown list, and updates the cached reference.
+     * @param settings the updated {@link Settings} model
+     */
+    public void refreshModelDropdown(Settings settings) {
+        // Reload settings from disk to get the newly saved model data
+        settings.load();
+        this.cachedSettings = settings;
+        
+        if (this.modelSelector != null) {
+            // Get the currently selected item before refresh
+            String currentSelection = (String) this.modelSelector.getSelectedItem();
+            
+            // Update the dropdown with new model list
+            this.modelSelector.removeAllItems();
+            for (String modelName : settings.modelNameList()) {
+                this.modelSelector.addItem(modelName);
+            }
+            
+            // If the previously selected model still exists, select it; otherwise select the newly added one (first item)
+            if (currentSelection != null && settings.modelNameList().contains(currentSelection)) {
+                this.modelSelector.setSelectedItem(currentSelection);
+            } else if (!settings.modelNameList().isEmpty()) {
+                this.modelSelector.setSelectedIndex(0);
+            }
+        }
     }
 
     // ==================== Safety Checks =======================
@@ -118,6 +149,7 @@ public class SettingsUI {
 
     private JScrollPane createSettingsGUIPanel(Settings settings, AppController controller) {
 
+        this.cachedSettings = settings;
         SettingsValues initialSettings = settings.getSettingsValues();
         TtsModel initialModel = settings.getModel(initialSettings.TtsModel);
 
@@ -185,7 +217,7 @@ public class SettingsUI {
         gbc.gridy = row;
         gbc.weightx = 0;
 
-        settingsPanel.add(new JLabel("Set Chunk Reloaded Range"), gbc);
+        settingsPanel.add(new JLabel("Set Audio Cache Size"), gbc);
 
         int minCacheSize = 1;
         int maxCacheSize = 10;
@@ -263,33 +295,32 @@ public class SettingsUI {
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        JComboBox<String> modelSelector = new JComboBox<>(
+        this.modelSelector = new JComboBox<>(
                 //new String[]{"GPT", "Kokoro", "VoxCPM", "New"}
                 // This converts the list to a string of the model names because JCOmboBox does not take strings
                 settings.modelNameList().toArray(new String[0])
         );
 
         System.out.println("This is the Current Model Name that should be deault - " + initialSettings.TtsModel);
-        modelSelector.setSelectedItem(initialSettings.TtsModel);
+        this.modelSelector.setSelectedItem(initialSettings.TtsModel);
 
-        modelSelector.addActionListener(e
+        this.modelSelector.addActionListener(e
                 -> {
-            String modelSelectedString = (String) modelSelector.getSelectedItem();
+            String modelSelectedString = (String) this.modelSelector.getSelectedItem();
 
-            Settings.TtsModel modelSelectedObject = settings.getModel(modelSelectedString);
+            Settings.TtsModel modelSelectedObject = this.cachedSettings.getModel(modelSelectedString);
             TTSURL.setText(modelSelectedObject.URL);
             apiKey.setText(modelSelectedObject.apiKey);
             voices.setText(String.join(", ", modelSelectedObject.voices));
             modelName.setText(modelSelectedString);
-                        // Update the voice combo box to reflect the newly selected model's voices
-                        voiceBox.setModel(new javax.swing.DefaultComboBoxModel<>(modelSelectedObject.voices.toArray(new String[0])));
-                        if (!modelSelectedObject.voices.isEmpty()) {
-                                voiceBox.setSelectedIndex(0);
-                        }
-
+            // Update the voice combo box to reflect the newly selected model's voices
+            voiceBox.setModel(new javax.swing.DefaultComboBoxModel<>(modelSelectedObject.voices.toArray(new String[0])));
+            if (!modelSelectedObject.voices.isEmpty()) {
+                voiceBox.setSelectedIndex(0);
+            }
         }
         );
-        settingsPanel.add(modelSelector, gbc);
+        settingsPanel.add(this.modelSelector, gbc);
         row++;
 
         // Model Name
@@ -381,7 +412,7 @@ public class SettingsUI {
             int cacheSizeInt = (Integer) cacheSize.getValue();
 
             String voiceSelected = (String) voiceBox.getSelectedItem();
-            String ttsModelSelected = (String) modelSelector.getSelectedItem();
+            String ttsModelSelected = (String) this.modelSelector.getSelectedItem();
 
             // New Model Vars
             String ttsAddr = TTSURL.getText();
@@ -405,7 +436,7 @@ public class SettingsUI {
             // The end user can not name a model new. This is to prevent that
             // This only matter if JComboBox is New
             if (ttsModelSelected.equals("New")) {
-                if (settings.modelNameList().contains(initialModel.name)) {
+                if (this.cachedSettings.modelNameList().contains(initialModel.name)) {
 
                     // TODO: give the user an error.
                     //Cut out of the saving

@@ -13,11 +13,11 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import com.mycompany.pdftest.model.PlayState;
-import com.mycompany.pdftest.model.Settings;
-import com.mycompany.pdftest.model.Settings.SettingsValues;
 import com.mycompany.pdftest.model.persistence.AudioBookDB;
-import com.mycompany.pdftest.util.TextUtils;
+import com.mycompany.pdftest.model.persistence.Settings;
+import com.mycompany.pdftest.model.persistence.Settings.SettingsValues;
+import com.mycompany.pdftest.model.state.PlayState;
+import com.mycompany.pdftest.text.TextProcesser;
 import com.mycompany.pdftest.view.BookUI;
 import com.mycompany.pdftest.view.FileManagerUI;
 import com.mycompany.pdftest.view.SettingsUI;
@@ -39,6 +39,7 @@ public class AppController {
     private BookUI bookUIView;
     private JLayeredPane bookUIPane;
     private JScrollPane settingsUIPane;
+    private SettingsUI settingsUIView;
     private FileManagerUI fileManagerUIView;
     
     // UI Components
@@ -77,7 +78,7 @@ public class AppController {
         // Load and parse the PDF
         File pdf = new File(pdfPath);
         currentBook = new ArrayList<>();
-        currentBook = TextUtils.splitText(TextUtils.getTextFromPdf(pdf));
+        currentBook = TextProcesser.splitText(TextProcesser.getTextFromPdf(pdf));
         currentBookPath = pdf.getAbsolutePath();
         currentBookName = pdf.getName();
         
@@ -154,8 +155,8 @@ public class AppController {
         });
         
         // Create settings UI view
-        SettingsUI settingsUI = new SettingsUI(settingsModel, this);
-        settingsUIPane = settingsUI.getSettingsPane();
+        settingsUIView = new SettingsUI(settingsModel, this);
+        settingsUIPane = settingsUIView.getSettingsPane();
         
         // Set up card layout for screen switching
         screens.add(fileManagerUIPane, "FileManager");
@@ -184,8 +185,8 @@ public class AppController {
         });
         
         // Create settings UI view
-        SettingsUI settingsUI = new SettingsUI(settingsModel, this);
-        settingsUIPane = settingsUI.getSettingsPane();
+        settingsUIView = new SettingsUI(settingsModel, this);
+        settingsUIPane = settingsUIView.getSettingsPane();
         
         // Set up card layout for screen switching
         screens.add(fileManagerUIPane, "FileManager");
@@ -424,6 +425,11 @@ public class AppController {
         settings.voice = voiceSelected;
         
         settingsModel.save();
+        
+        // Refresh the model dropdown in SettingsUI to show the newly added model
+        if (settingsUIView != null) {
+            settingsUIView.refreshModelDropdown(settingsModel);
+        }
         
         System.out.println("Settings have been saved");
     }

@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.mycompany.pdftest.util;
+package com.mycompany.pdftest.text;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import org.apache.pdfbox.text.PDFTextStripper;
  *
  * @author elimo
  */
-public class TextUtils {
+public class TextProcesser {
 
     /** Minimum length for combining text chunks */
     private static final int MINIMUM_CHUNK_LENGTH = 31;

@@ -4,7 +4,7 @@
  */
 
 
-package com.mycompany.pdftest.model;
+package com.mycompany.pdftest.model.persistence;
 
 import java.io.File;
 import java.io.FileReader;
@@ -165,7 +165,7 @@ public class Settings {
      * This method handles loading the settings from the JSON file, or creating a default file
      * if it does not exist.
      */
-    private void load() {
+    public void load() {
 
         // In case there is no file
         if (settingsFile.exists() && settingsFile.length() > 0) {
