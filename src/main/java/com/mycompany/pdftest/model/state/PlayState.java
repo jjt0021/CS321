@@ -161,9 +161,9 @@ public class PlayState implements Audio.PlaybackListener {
     }
 
     public void updateCachWindow() {
-        // Keep 5 chunks behind and 5 chunks ahead (current chunk in the middle of window)
-        int from = Math.max(0, currentChunk - cacheSize);  // 5 behind
-        int to = Math.min(fullBook.size() - 1, currentChunk + cacheSize);  // 5 ahead
+        // Only cache and prefetch current chunk and forward
+        int from = currentChunk;  // Start from current chunk only
+        int to = Math.min(fullBook.size() - 1, currentChunk + cacheSize);  // Look ahead
         for (int i = from; i <= to; i++) {
             if (cachedWindow.containsKey(i)) {
                 continue;
@@ -186,9 +186,8 @@ public class PlayState implements Audio.PlaybackListener {
             return;
         }
         
-        // IMPORTANT: Never generate chunks in the past - only current and future chunks
+        // IMPORTANT: Only generate chunks that are current or future
         if (chunkIndex < currentChunk) {
-            System.out.println("[PlayState.Prefetch] Skipping generation for past chunk " + chunkIndex + " (current: " + currentChunk + ")");
             return;
         }
         
@@ -258,6 +257,9 @@ public class PlayState implements Audio.PlaybackListener {
 
         System.out.println("Full book size: " + fullBook.size());
         this.currentChunk = currentChunk;
+        // Update the cache window for the new chunk position
+        // Very Important for skipping.
+        updateCachWindow();
     }
 
     public int getCurrentChunk() {
